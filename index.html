@@ -339,6 +339,13 @@
     margin-bottom: 6px; font-size: 14px; line-height: 1.5;
   }
   .prompt-list li .prompt-text { flex: 1; }
+  .prompt-list li .prompt-text[contenteditable="true"] {
+    cursor: text; border-radius: 4px; padding: 1px 4px; margin: -1px -4px;
+  }
+  .prompt-list li .prompt-text[contenteditable="true"]:hover { background: rgba(255,255,255,0.05); }
+  .prompt-list li .prompt-text[contenteditable="true"]:focus {
+    outline: 2px solid var(--e-orange); outline-offset: 1px; background: rgba(255,255,255,0.06);
+  }
   .prompt-remove {
     flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25);
     background: transparent; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1; cursor: pointer;
@@ -500,7 +507,7 @@
       <div class="field">
         <label for="arDays">A/R — Days to Collect<span class="src-tag estimate">Estimate</span></label>
         <div class="input-row"><input id="arDays" type="number" step="0.5"><span class="suffix">days</span></div>
-        <div class="field-note">No trade A/R sits on the balance sheet — same-day collection. This is a directional estimate of the collections tail, not a workbook figure. <b>Reference only — the A/R lever's math runs off the nudge on its card, not this field.</b></div>
+        <div class="field-note">Merchant-processor deposits land the next business day, and very little true A/R sits outstanding. This is a directional estimate of the small collections tail, not a workbook figure. <b>Reference only — the A/R lever's math runs off the nudge on its card, not this field.</b></div>
       </div>
       <div class="field">
         <label for="apDays">A/P — Days to Pay<span class="src-tag estimate">Estimate</span></label>
@@ -508,9 +515,9 @@
         <div class="field-note">B/S payables balance is too small/noisy this quarter to back into a day count — using Paul's stated "near max terms" read instead. <b>Reference only — the A/P lever's math runs off the nudge on its card (default 0), not this field.</b></div>
       </div>
       <div class="field">
-        <label for="materials">Materials / Inventory on Hand<span class="src-tag actual">Actual</span></label>
+        <label for="materials">Materials / Inventory on Hand<span class="src-tag estimate">Estimate</span></label>
         <div class="input-row"><span class="prefix">$</span><input id="materials" type="text" inputmode="decimal"></div>
-        <div class="field-note">$0 — Einstein expenses packing supplies as incurred (Q2 actual: ~$325K), it isn't carried as a balance-sheet inventory asset. No lever room here by construction.</div>
+        <div class="field-note">Einstein does carry packing-materials/supplies inventory, but it isn't tracked well today — running as a $0 placeholder until a real on-hand figure exists. Q2 supplies spend was ~$325K, expensed as COGS as incurred. Swap in a real on-hand estimate once ops/warehouse tracking catches up.</div>
       </div>
       <div class="field">
         <label for="numTrucks">Fleet Size<span class="src-tag actual">Actual</span></label>
@@ -545,8 +552,8 @@
 
     <div class="compare-note">
       <div class="compare-col">
-        <h4 style="color:var(--status-notpursue)">Why Inventory ≠ Truck Utilization</h4>
-        <p>The classic Inventory lever is cash tied up in unsold goods. Einstein doesn't carry any — packing supplies get expensed the quarter they're bought, not held on the balance sheet — so this lever nets to $0 by construction, not by neglect. Truck utilization is real money, but it isn't a cash-conversion issue — it's an <strong>overhead / fixed-asset efficiency</strong> issue: fewer, fuller trucks means less paid for insurance and maintenance on capacity you're not using.</p>
+        <h4 style="color:var(--status-limited)">Why Inventory ≠ Truck Utilization</h4>
+        <p>The classic Inventory lever is cash tied up in unsold goods. Einstein does carry packing-materials and supplies inventory, but it isn't tracked or valued today — so this lever runs at a placeholder $0 for lack of data, not because nothing's there. Real room may exist once it's actually counted; until then, treat Truck Utilization as the more useful eighth lever. Truck utilization is real money, and it isn't a cash-conversion issue — it's an <strong>overhead / fixed-asset efficiency</strong> issue: fewer, fuller trucks means less paid for insurance and maintenance on capacity you're not using.</p>
       </div>
       <div class="compare-col">
         <h4 style="color:var(--status-structural)">So it gets its own lever</h4>
@@ -687,7 +694,7 @@
 
     <div class="script-item" data-lever="ar">
       <div class="script-head"><h4>5. Accounts Receivable</h4><span class="chip" style="background:var(--status-limited)">Limited Room</span></div>
-      <div class="standing">Collected almost entirely day-of-move; the only float is the collections tail — iPad/connectivity failures or an upset customer.</div>
+      <div class="standing">Collected almost entirely day-of-move — merchant-processor deposits land the next day — the only float is the collections tail: iPad/connectivity failures or an upset customer.</div>
       <ul class="prompt-list" data-prompt-lever="ar"></ul>
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ar"><button class="btn btn-ghost" data-add-btn="ar" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ar" type="button">Reset questions to default</button>
@@ -712,8 +719,8 @@
     </div>
 
     <div class="script-item" data-lever="materials">
-      <div class="script-head"><h4>7. Materials / Inventory</h4><span class="chip" style="background:var(--status-notpursue)">Minor Lever</span></div>
-      <div class="standing">Einstein doesn't carry packing supplies as inventory — they're expensed the quarter they're bought (Q2 actual: ~$325K in COGS). Nothing to "turn faster" here.</div>
+      <div class="script-head"><h4>7. Materials / Inventory</h4><span class="chip" style="background:var(--status-limited)">Untracked — Limited Room</span></div>
+      <div class="standing">Einstein does carry packing-materials and supplies inventory, but it isn't tracked well today — running as a $0 placeholder until there's a real on-hand figure (Q2 supplies spend: ~$325K, expensed as COGS). Real lever room here is unknown until it's actually counted.</div>
       <ul class="prompt-list" data-prompt-lever="materials"></ul>
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="materials"><button class="btn btn-ghost" data-add-btn="materials" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="materials" type="button">Reset questions to default</button>
@@ -791,7 +798,7 @@
         revenue: 8403646,      // Q2 Est. (3 mo), 'Q2 & YTD Estimated Actuals'!E6 — ties to Allocated tab's $8,403,285 within ~$361 rounding
         cogsPct: 52.33,        // Total Cost of Revenue / Revenue, Q2 3-mo
         overhead: 2598743,     // Total Operating Expenses, Q2 3-mo (pre-D&A)
-        arDays: 4,             // estimate — no trade A/R on the balance sheet
+        arDays: 1,             // estimate — merchant-processor deposits land next day, very little true A/R outstanding
         apDays: 45,            // estimate — B/S payable balance too small/noisy to back into a day count
         materials: 0,          // no B/S inventory line — packing supplies expensed as COGS ($325,291 in Q2)
         numTrucks: 81.2,       // Q2 avg company-wide, 'SRC Truck Counts'
@@ -825,8 +832,8 @@
       prompt: 'Days improvement on the small collections-issue tail only.' },
     { key: 'ap',       name: 'Accounts Payable',       unit: 'days',status: 'notpursue',  chip: 'Not Pursuing',
       prompt: 'Already near max terms; shown for reference, default is 0.' },
-    { key: 'materials',name: 'Materials / Inventory',  unit: '%',   status: 'notpursue',  chip: 'Minor Lever',
-      prompt: 'Packing supplies on hand — a small, low-priority number.' },
+    { key: 'materials',name: 'Materials / Inventory',  unit: '%',   status: 'limited',  chip: 'Untracked — Limited Room',
+      prompt: 'Packing materials/supplies on hand — not tracked well today, so treated as $0 until a real figure exists.' },
     { key: 'truck',    name: 'Truck Utilization',      unit: 'pts', status: 'structural', chip: 'Structural — 8th Lever',
       prompt: 'Right-size the fleet toward target utilization; carry fewer idle trucks.' }
   ];
@@ -1025,7 +1032,8 @@
       'Confirm: no deliberate move planned here this quarter.'
     ],
     materials: [
-      'Any shrinkage or waste in what gets bought worth a five-minute mention? If not, move on.'
+      'Do we have any reliable on-hand estimate for packing materials/supplies yet? If not, who could build one?',
+      'Any shrinkage or waste in what gets bought worth a five-minute mention?'
     ],
     truck: [
       'Which branches sit below 60% utilization (red per the standing benchmark) and are candidates for fleet right-sizing?',
@@ -1083,7 +1091,20 @@
       var li = document.createElement('li');
       var span = document.createElement('span');
       span.className = 'prompt-text';
+      span.contentEditable = 'true';
       span.textContent = text;
+      span.addEventListener('blur', function() {
+        var val = span.textContent.trim();
+        if (val) {
+          promptState[lever][idx] = val;
+          saveSession();
+        } else {
+          span.textContent = promptState[lever][idx]; // don't allow an edit to blank it out
+        }
+      });
+      span.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); span.blur(); }
+      });
       var btn = document.createElement('button');
       btn.type = 'button'; btn.className = 'prompt-remove'; btn.textContent = '×';
       btn.setAttribute('aria-label', 'Remove question');
