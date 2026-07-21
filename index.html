@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.1 2026-07-21 — Albert audit pass: noindex, print fix, nudge focus fix, A/R–A/P reference labels, save-failure warning -->
+
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -425,10 +428,13 @@
   footer p { color: var(--text-soft); font-size: 12.5px; max-width: none; }
 
   @media print {
-    nav, .hero, section.workbench, footer, .no-print { display: none !important; }
-    section.briefing { background: white !important; color: black !important; }
-    section.briefing * { color: black !important; }
+    /* v1.1 fix: "Print action plan" used to hide #plan itself (it's a .workbench section) — now the plan is the ONLY thing that prints */
+    nav, .hero, section.workbench:not(#plan), section.briefing, footer, .no-print { display: none !important; }
     body { background: white; }
+    section.workbench#plan { background: white !important; padding: 0 !important; }
+    .plan-table th { background: white !important; color: black !important; border: 1px solid #999; }
+    .plan-table td { background: white !important; color: black !important; border-color: #999; }
+    #plan h2, #plan .lede, #plan .section-label { color: black !important; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -494,12 +500,12 @@
       <div class="field">
         <label for="arDays">A/R — Days to Collect<span class="src-tag estimate">Estimate</span></label>
         <div class="input-row"><input id="arDays" type="number" step="0.5"><span class="suffix">days</span></div>
-        <div class="field-note">No trade A/R sits on the balance sheet — same-day collection. This is a directional estimate of the collections tail, not a workbook figure.</div>
+        <div class="field-note">No trade A/R sits on the balance sheet — same-day collection. This is a directional estimate of the collections tail, not a workbook figure. <b>Reference only — the A/R lever's math runs off the nudge on its card, not this field.</b></div>
       </div>
       <div class="field">
         <label for="apDays">A/P — Days to Pay<span class="src-tag estimate">Estimate</span></label>
         <div class="input-row"><input id="apDays" type="number" step="1"><span class="suffix">days</span></div>
-        <div class="field-note">B/S payables balance is too small/noisy this quarter to back into a day count — using Paul's stated "near max terms" read instead.</div>
+        <div class="field-note">B/S payables balance is too small/noisy this quarter to back into a day count — using Paul's stated "near max terms" read instead. <b>Reference only — the A/P lever's math runs off the nudge on its card (default 0), not this field.</b></div>
       </div>
       <div class="field">
         <label for="materials">Materials / Inventory on Hand<span class="src-tag actual">Actual</span></label>
@@ -762,7 +768,7 @@
 </section>
 
 <footer>
-  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop.</p>
+  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop. <span style="opacity:.7">v1.1 · 2026-07-21</span></p>
 </footer>
 
 <script>
@@ -877,7 +883,7 @@
           '<div class="lever-prompt">' + def.prompt + '</div>' +
         '</div>' +
         '<div class="lever-controls">' +
-          '<div class="lever-impact' + (isCash ? ' cash' : '') + '">' + fmt0.format(Math.round(impacts[def.key])) + '</div>' +
+          '<div class="lever-impact' + (isCash ? ' cash' : '') + '" data-impact-key="' + def.key + '">' + fmt0.format(Math.round(impacts[def.key])) + '</div>' +
           '<div class="nudge"><span>nudge</span><input type="number" step="0.5" value="' + leverNudges[def.key] + '" data-key="' + def.key + '"><span>' + def.unit + '</span></div>' +
         '</div>';
       listEl.appendChild(card);
@@ -886,12 +892,23 @@
     listEl.querySelectorAll('.nudge input').forEach(function(inp) {
       inp.addEventListener('input', function() {
         leverNudges[inp.getAttribute('data-key')] = parseFloat(inp.value) || 0;
-        renderLevers();
-        renderTotals();
+        // v1.1 fix: update impacts in place — a full renderLevers() here rebuilt the cards and
+        // destroyed this input mid-typing (focus lost after every keystroke)
+        updateImpacts();
       });
     });
 
     return impacts;
+  }
+
+  function updateImpacts() {
+    var v = getInputs();
+    var impacts = computeImpacts(v);
+    leverDefs.forEach(function(def) {
+      var el = document.querySelector('.lever-impact[data-impact-key="' + def.key + '"]');
+      if (el) el.textContent = fmt0.format(Math.round(impacts[def.key]));
+    });
+    renderTotals();
   }
 
   function renderTotals() {
@@ -1031,9 +1048,32 @@
     planState = stored.actionPlan || [];
   }
 
-  function saveSession() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); } catch (e) {}
+  function notify(msg) {
+    var t = document.getElementById('pow1-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'pow1-toast';
+      t.style.cssText = 'position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#27343D;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.3);';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.display = 'block';
+    clearTimeout(t._h); t._h = setTimeout(function(){ t.style.display = 'none'; }, 4000);
   }
+
+  var saveWarned = false;
+  function saveSession() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); }
+    catch (e) {
+      // v1.1: a silent failure here loses a whole workshop's ideas — warn once
+      if (!saveWarned) { saveWarned = true; notify('⚠ Save failed — your ideas are NOT persisting in this browser. Print or copy the plan before closing.'); }
+    }
+  }
+
+  // v1.1: two tabs on this page share one localStorage key, last writer wins — warn instead of clobbering silently
+  window.addEventListener('storage', function(e) {
+    if (e.key === STORAGE_KEY) notify('⚠ This page changed in another tab — reload here before adding more, or edits will overwrite each other.');
+  });
 
   function renderPrompts(lever) {
     var ul = document.querySelector('.prompt-list[data-prompt-lever="' + lever + '"]');
