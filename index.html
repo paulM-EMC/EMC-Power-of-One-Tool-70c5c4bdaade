@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Einstein Power of One</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Einstein brand core (do not invent new brand hex) */
+    --e-orange:   #EF8B22;
+    --e-gray:     #53575A;
+    --e-blue:     #0979C3;
+    --e-dark:     #27343D;
+    --e-light:    #F6F6F6;
+    --e-success:  #69995d;
+
+    /* Internal-tool status semantics (EMMA-pattern extension, not customer brand colors) */
+    --status-strength:  #3F7D52;
+    --status-focus:     #0979C3;
+    --status-limited:   #B8791E;
+    --status-notpursue: #8A8F94;
+    --status-structural:#EF8B22;
+
+    /* Page tokens */
+    --paper:      #FFFFFF;
+    --workbench:  var(--e-light);
+    --ink:        var(--e-dark);
+    --text:       var(--e-gray);
+    --text-soft:  #767A7D;
+    --border:     #E1E2E3;
+    --accent:     var(--e-blue);
+    --radius:     10px;
+    --shadow:     0 1px 3px rgba(39,52,61,0.08), 0 8px 24px rgba(39,52,61,0.05);
+
+    --font-display: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-body:    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono:    "Cascadia Mono", "SF Mono", "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+    /* Fixed (non-theme-swapped) — the "briefing" register is deliberately always-dark, a facilitator's run-sheet, independent of viewer theme */
+    --briefing-bg: #27343D;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1D262D;
+      --workbench: #171E24;
+      --ink: #EDEFF0;
+      --text: #C7CBCD;
+      --text-soft: #8D9296;
+      --border: #303A41;
+      --status-strength:  #5FA372;
+      --status-focus:     #4FA8E8;
+      --status-limited:   #D69A44;
+      --status-notpursue: #7C8286;
+      --status-structural:#F0A04B;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1D262D;
+    --workbench: #171E24;
+    --ink: #EDEFF0;
+    --text: #C7CBCD;
+    --text-soft: #8D9296;
+    --border: #303A41;
+    --status-strength:  #5FA372;
+    --status-focus:     #4FA8E8;
+    --status-limited:   #D69A44;
+    --status-notpursue: #7C8286;
+    --status-structural:#F0A04B;
+  }
+  :root[data-theme="light"] {
+    --paper: #FFFFFF;
+    --workbench: var(--e-light);
+    --ink: var(--e-dark);
+    --text: var(--e-gray);
+    --text-soft: #767A7D;
+    --border: #E1E2E3;
+    --status-strength:  #3F7D52;
+    --status-focus:     #0979C3;
+    --status-limited:   #B8791E;
+    --status-notpursue: #8A8F94;
+    --status-structural:#EF8B22;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-body);
+    background: var(--workbench);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  h1, h2, h3, h4 { font-family: var(--font-display); color: var(--ink); text-wrap: balance; }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+
+  /* ── STICKY NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: var(--ink);
+    display: flex; align-items: center;
+    gap: 4px;
+    padding: 0 20px;
+    overflow-x: auto; white-space: nowrap;
+    scrollbar-width: none;
+  }
+  nav::-webkit-scrollbar { display: none; }
+  nav .brand {
+    color: white; font-weight: 700; font-size: 13px;
+    padding: 14px 18px 14px 0; letter-spacing: 0.3px;
+    border-right: 1px solid rgba(255,255,255,0.15);
+    margin-right: 8px;
+  }
+  nav a {
+    color: rgba(255,255,255,0.68);
+    text-decoration: none;
+    padding: 14px 14px;
+    font-size: 13px; font-weight: 500;
+    border-bottom: 2px solid transparent;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  nav a:hover, nav a:focus-visible { color: white; }
+  nav a.active { color: white; border-bottom-color: var(--e-orange); }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    color: white;
+    padding: 44px 20px 40px;
+  }
+  .hero-inner { max-width: 980px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase;
+    color: var(--e-orange); margin-bottom: 10px;
+  }
+  .hero h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; color: white; margin-bottom: 12px; line-height: 1.1; }
+  .hero p { color: rgba(255,255,255,0.75); max-width: 640px; font-size: 16px; margin-bottom: 0; }
+  .hero .cite { color: rgba(255,255,255,0.45); font-size: 12.5px; margin-top: 14px; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 980px; margin: 0 auto; padding: 0 20px; }
+  section { padding: 44px 20px; }
+  section.workbench { background: var(--workbench); }
+  section.briefing { background: var(--briefing-bg); color: rgba(255,255,255,0.85); }
+  section.briefing h2, section.briefing h3, section.briefing h4 { color: white; }
+  section.briefing p, section.briefing li { color: rgba(255,255,255,0.7); }
+  section.briefing .card { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase;
+    color: var(--e-orange); margin-bottom: 8px;
+  }
+  h2 { font-size: clamp(20px, 3.4vw, 27px); font-weight: 700; margin-bottom: 10px; }
+  h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+  p { color: var(--text); margin-bottom: 14px; max-width: 68ch; }
+  p:last-child { margin-bottom: 0; }
+  ul.plain { list-style: none; }
+  .lede { font-size: 16px; }
+
+  .callout {
+    background: var(--paper); border: 1px solid var(--border); border-left: 3px solid var(--e-orange);
+    border-radius: var(--radius); padding: 16px 18px; margin: 18px 0;
+  }
+  .callout p:last-child { margin-bottom: 0; }
+  .callout .label { font-weight: 700; color: var(--ink); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+
+  .flag-banner {
+    background: #FFF4E5; border: 1px solid #F0CE9C; color: #7A4E12;
+    border-radius: var(--radius); padding: 14px 16px; margin: 18px 0 28px;
+    font-size: 13.5px; display: flex; gap: 10px; align-items: flex-start;
+  }
+  @media (prefers-color-scheme: dark) {
+    .flag-banner { background: #3A2E14; border-color: #5C4520; color: #F0CE9C; }
+  }
+  :root[data-theme="dark"] .flag-banner { background: #3A2E14; border-color: #5C4520; color: #F0CE9C; }
+  :root[data-theme="light"] .flag-banner { background: #FFF4E5; border-color: #F0CE9C; color: #7A4E12; }
+  .flag-banner .dot { font-weight: 800; }
+
+  /* ── INPUT GRID ── */
+  .input-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px; margin: 20px 0 8px;
+  }
+  .field {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  .field label {
+    display: block; font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--text-soft); margin-bottom: 6px;
+  }
+  .field .input-row { display: flex; align-items: baseline; gap: 3px; }
+  .field .prefix, .field .suffix { color: var(--text-soft); font-size: 14px; font-family: var(--font-mono); white-space: nowrap; }
+  .field input {
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 18px; font-weight: 700; color: var(--ink);
+    border: none; background: transparent; outline: none;
+    padding: 2px 0;
+    width: 9ch;          /* fallback for browsers without field-sizing support */
+    field-sizing: content;
+    min-width: 2ch; max-width: 100%;
+  }
+  .field input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+  .field-note { font-size: 11px; color: var(--text-soft); margin-top: 4px; }
+
+  .src-tag {
+    display: inline-block; font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.3px; padding: 1px 7px; border-radius: 8px; margin-left: 6px;
+    vertical-align: middle; color: white; position: relative; top: -1px;
+  }
+  .src-tag.actual   { background: var(--status-strength); }
+  .src-tag.estimate { background: var(--status-limited); }
+
+  .quarter-bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 12px 16px; margin: 18px 0;
+  }
+  .quarter-bar label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-soft); }
+  .quarter-bar select {
+    font-family: var(--font-body); font-weight: 700; font-size: 14px; color: var(--ink);
+    background: var(--workbench); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  }
+  .quarter-bar .provenance { font-size: 12px; color: var(--text-soft); flex: 1 1 260px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: var(--font-body); font-weight: 700; font-size: 13px;
+    border-radius: 8px; padding: 10px 18px; cursor: pointer; border: 1px solid transparent;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { box-shadow: 0 4px 14px rgba(9,121,195,0.32); }
+  .btn-ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+  .btn-ghost:hover { border-color: var(--text-soft); }
+  section.briefing .btn-ghost { color: white; border-color: rgba(255,255,255,0.3); }
+
+  /* ── LEVER CARDS ── */
+  .lever-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+  .lever-card {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px 18px; box-shadow: var(--shadow);
+    display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center;
+  }
+  .lever-rank {
+    font-family: var(--font-mono); font-weight: 800; font-size: 20px; color: var(--text-soft);
+    text-align: center;
+  }
+  .lever-main h4 { font-size: 15.5px; margin-bottom: 4px; }
+  .lever-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .chip {
+    display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; padding: 3px 9px; border-radius: 20px; color: white;
+  }
+  .lever-prompt { font-size: 13px; color: var(--text-soft); max-width: 52ch; }
+  .lever-controls { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 168px; }
+  .lever-controls .nudge { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-soft); }
+  .lever-controls .nudge input {
+    width: 52px; font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: var(--ink);
+    border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; text-align: right; background: var(--workbench);
+  }
+  .lever-impact { font-family: var(--font-mono); font-weight: 800; font-size: 20px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .lever-impact.cash { color: var(--status-focus); }
+
+  @media (max-width: 620px) {
+    .lever-card { grid-template-columns: 1fr; }
+    .lever-rank { text-align: left; }
+    .lever-controls { align-items: flex-start; }
+  }
+
+  .compare-note {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px;
+  }
+  @media (max-width: 620px) { .compare-note { grid-template-columns: 1fr; } }
+  .compare-col { background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
+  .compare-col h4 { font-size: 13.5px; margin-bottom: 6px; }
+  .compare-col p { font-size: 13px; margin-bottom: 0; }
+
+  /* ── STAT ROW ── */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 20px; }
+  .stat-card {
+    background: var(--paper); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 22px; box-shadow: var(--shadow);
+  }
+  .stat-card .stat-label { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft); margin-bottom: 8px; }
+  .stat-card .stat-val { font-family: var(--font-mono); font-weight: 800; font-size: 34px; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat-card .stat-sub { font-size: 12.5px; color: var(--text-soft); margin-top: 6px; }
+  .stat-card .stat-formula {
+    font-size: 12px; color: var(--text-soft); margin-top: 12px; padding-top: 12px;
+    border-top: 1px solid var(--border); line-height: 1.55;
+  }
+  .stat-card .stat-formula b { color: var(--ink); }
+
+  /* ── PROCESS STEPS ── */
+  .steps { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+  .step { display: grid; grid-template-columns: 34px 1fr; gap: 14px; }
+  .step .num {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--e-orange); color: white;
+    display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-weight: 800; font-size: 14px;
+  }
+  .step p { margin-bottom: 0; color: rgba(255,255,255,0.78); }
+  .step strong { color: white; }
+
+  table.roster { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13.5px; }
+  table.roster th, table.roster td { text-align: left; padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+  table.roster th { color: rgba(255,255,255,0.5); font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px; font-weight: 700; }
+  table.roster td { color: rgba(255,255,255,0.85); }
+  .table-wrap { overflow-x: auto; }
+
+  table.history { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: 13.5px; min-width: 640px; }
+  table.history th, table.history td {
+    text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  table.history th {
+    font-family: var(--font-body); color: var(--text-soft); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.4px; font-weight: 700; background: var(--workbench);
+  }
+  table.history td:first-child, table.history th:first-child { font-family: var(--font-body); white-space: normal; }
+  table.history tr:last-child td { border-bottom: none; }
+
+  /* ── SCRIPT ── */
+  .script-item { border-top: 1px solid rgba(255,255,255,0.12); padding: 18px 0; }
+  .script-item:first-child { border-top: none; padding-top: 6px; }
+  .script-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .script-head h4 { color: white; font-size: 16px; margin-bottom: 0; }
+  .script-item .standing { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 8px; font-style: italic; }
+
+  /* ── Prompts (add/remove, persisted) ── */
+  .prompt-list { list-style: none; padding: 0; margin-bottom: 8px; }
+  .prompt-list li {
+    display: flex; align-items: flex-start; gap: 8px; color: rgba(255,255,255,0.75);
+    margin-bottom: 6px; font-size: 14px; line-height: 1.5;
+  }
+  .prompt-list li .prompt-text { flex: 1; }
+  .prompt-remove {
+    flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.25);
+    background: transparent; color: rgba(255,255,255,0.5); font-size: 12px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; margin-top: 2px;
+  }
+  .prompt-remove:hover, .prompt-remove:focus-visible { border-color: #E8877A; color: #E8877A; }
+  .prompt-add {
+    display: flex; gap: 8px; margin: 8px 0 4px; align-items: center;
+  }
+  .prompt-add input {
+    flex: 1; font-size: 13.5px; padding: 7px 10px; border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: white;
+  }
+  .prompt-add input::placeholder { color: rgba(255,255,255,0.4); }
+  .prompt-add input:focus-visible { outline: 2px solid var(--e-orange); outline-offset: 1px; }
+  .prompt-reset {
+    background: none; border: none; color: rgba(255,255,255,0.45); font-size: 11.5px; cursor: pointer;
+    text-decoration: underline; padding: 0; margin-bottom: 14px;
+  }
+  .prompt-reset:hover { color: rgba(255,255,255,0.75); }
+
+  /* ── Ideas table (per lever, feeds Action Plan) ── */
+  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; }
+  .ideas-table th {
+    text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
+    color: rgba(255,255,255,0.45); font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .ideas-table td {
+    padding: 7px 8px; border-bottom: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.85);
+    vertical-align: top;
+  }
+  .ideas-table td[contenteditable="true"] { min-width: 70px; }
+  .ideas-table td[contenteditable="true"]:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
+  .ideas-table td[contenteditable="true"]:focus { outline: 2px solid var(--e-orange); outline-offset: -2px; background: rgba(255,255,255,0.05); }
+  .ideas-table .col-pull { width: 30px; text-align: center; }
+  .ideas-table .col-remove { width: 24px; text-align: center; }
+  .ideas-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+  .row-remove-btn {
+    width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
+    background: transparent; color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer; line-height: 1;
+  }
+  .row-remove-btn:hover { border-color: #E8877A; color: #E8877A; }
+  .ideas-table tr.pulled td { opacity: 0.45; }
+  .pulled-tag { font-size: 10px; color: var(--e-orange); font-weight: 700; text-transform: uppercase; }
+  .add-idea-row {
+    background: none; border: 1px dashed rgba(255,255,255,0.25); color: rgba(255,255,255,0.6);
+    font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 6px;
+  }
+  .add-idea-row:hover { border-color: var(--e-orange); color: white; }
+
+  .pull-bar {
+    margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.15);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+  }
+  .pull-bar .pull-note { font-size: 12.5px; color: rgba(255,255,255,0.5); flex: 1 1 320px; }
+  .persist-note {
+    font-size: 12px; color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 22px;
+  }
+
+  /* ── ACTION PLAN ── */
+  .plan-table { width: 100%; border-collapse: collapse; margin-top: 18px; min-width: 760px; }
+  .plan-table th {
+    background: var(--ink); color: white; text-align: left; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.4px; padding: 10px 12px; font-weight: 700;
+  }
+  .plan-table td {
+    border: 1px solid var(--border); padding: 10px 12px; font-size: 13.5px; vertical-align: top;
+    background: var(--paper); min-width: 110px;
+  }
+  .plan-table td[contenteditable="true"]:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--workbench); }
+  .plan-table td.placeholder { color: var(--text-soft); }
+  .plan-table td[contenteditable="true"]:empty:before { content: attr(data-placeholder); color: var(--text-soft); }
+  .plan-table .col-remove { width: 28px; min-width: 28px; text-align: center; }
+  .plan-remove-btn {
+    width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--paper); color: var(--text-soft); font-size: 12px; cursor: pointer; line-height: 1;
+  }
+  .plan-remove-btn:hover { border-color: var(--status-limited); color: var(--status-limited); }
+  .add-plan-row {
+    background: none; border: 1px dashed var(--border); color: var(--text-soft);
+    font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .add-plan-row:hover { border-color: var(--accent); color: var(--accent); }
+
+  footer { padding: 30px 20px 60px; text-align: center; }
+  footer p { color: var(--text-soft); font-size: 12.5px; max-width: none; }
+
+  @media print {
+    nav, .hero, section.workbench, footer, .no-print { display: none !important; }
+    section.briefing { background: white !important; color: black !important; }
+    section.briefing * { color: black !important; }
+    body { background: white; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<nav aria-label="Section navigation">
+  <span class="brand">EMC · POWER OF ONE</span>
+  <a href="#numbers">Numbers</a>
+  <a href="#levers">Levers</a>
+  <a href="#swing">Combined Swing</a>
+  <a href="#history">History</a>
+  <a href="#process">Quarterly Process</a>
+  <a href="#script">Discussion Script</a>
+  <a href="#plan">Action Plan</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">Quarterly Goal Review · Financial Levers</div>
+    <h1>The Power of One</h1>
+    <p>Seven small moves — plus one Einstein-specific eighth — and what each is actually worth to the P&L. Built to replace the $1,000/mo CashFlowStory subscription with the same math, tuned to how Einstein Moving actually makes money.</p>
+    <div class="cite">Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Numbers are yours to edit — nothing here is live-connected to Sage or EMMA.</div>
+  </div>
+</div>
+
+<section class="workbench" id="numbers">
+  <div class="container">
+    <div class="section-label">Step 1 — Your Numbers</div>
+    <h2>Start with what's true this quarter</h2>
+    <p class="lede">Every field below is editable — the levers and totals recalculate as you type. Figures are per-quarter, not annualized — Einstein's business is seasonal enough that a single quarter × 4 would mislead.</p>
+
+    <div class="quarter-bar">
+      <label for="quarterSelect">Quarter</label>
+      <select id="quarterSelect"></select>
+      <span class="provenance" id="quarterProvenance"></span>
+    </div>
+
+    <div class="flag-banner">
+      <span class="dot">⚑</span>
+      <span id="flagBannerText"></span>
+    </div>
+
+    <div class="input-grid">
+      <div class="field">
+        <label for="revenue">Revenue<span class="src-tag actual">Actual</span></label>
+        <div class="input-row"><span class="prefix">$</span><input id="revenue" type="text" inputmode="decimal"></div>
+        <div class="field-note">This quarter, 3 months, all branches</div>
+      </div>
+      <div class="field">
+        <label for="cogsPct">Cost of Delivery (COGS)<span class="src-tag actual">Actual</span></label>
+        <div class="input-row"><input id="cogsPct" type="number" step="0.01"><span class="suffix">% of revenue</span></div>
+        <div class="field-note">Mover comp, merchant fees, fuel, damage, packing supplies</div>
+      </div>
+      <div class="field">
+        <label for="overhead">Operating Expenses<span class="src-tag actual">Actual</span></label>
+        <div class="input-row"><span class="prefix">$</span><input id="overhead" type="text" inputmode="decimal"></div>
+        <div class="field-note">Total opex this quarter — branch + corporate, pre-D&amp;A</div>
+      </div>
+      <div class="field">
+        <label for="arDays">A/R — Days to Collect<span class="src-tag estimate">Estimate</span></label>
+        <div class="input-row"><input id="arDays" type="number" step="0.5"><span class="suffix">days</span></div>
+        <div class="field-note">No trade A/R sits on the balance sheet — same-day collection. This is a directional estimate of the collections tail, not a workbook figure.</div>
+      </div>
+      <div class="field">
+        <label for="apDays">A/P — Days to Pay<span class="src-tag estimate">Estimate</span></label>
+        <div class="input-row"><input id="apDays" type="number" step="1"><span class="suffix">days</span></div>
+        <div class="field-note">B/S payables balance is too small/noisy this quarter to back into a day count — using Paul's stated "near max terms" read instead.</div>
+      </div>
+      <div class="field">
+        <label for="materials">Materials / Inventory on Hand<span class="src-tag actual">Actual</span></label>
+        <div class="input-row"><span class="prefix">$</span><input id="materials" type="text" inputmode="decimal"></div>
+        <div class="field-note">$0 — Einstein expenses packing supplies as incurred (Q2 actual: ~$325K), it isn't carried as a balance-sheet inventory asset. No lever room here by construction.</div>
+      </div>
+      <div class="field">
+        <label for="numTrucks">Fleet Size<span class="src-tag actual">Actual</span></label>
+        <div class="input-row"><input id="numTrucks" type="number" step="0.1"><span class="suffix">trucks</span></div>
+        <div class="field-note">Quarter average, per confirmed truck counts (Ben, 7/20)</div>
+      </div>
+      <div class="field">
+        <label for="costPerTruck">Carrying Cost / Truck<span class="src-tag estimate">Estimate</span></label>
+        <div class="input-row"><span class="prefix">$</span><input id="costPerTruck" type="text" inputmode="decimal"></div>
+        <div class="field-note">Derived: (Truck &amp; Equipment + Vehicle Repair/Maint + Auto/GL/Cargo Insurance) ÷ avg trucks, this quarter. Insurance isn't broken out to auto-only, so this runs slightly high.</div>
+      </div>
+      <div class="field">
+        <label for="currentUtil">Current Truck Utilization<span class="src-tag estimate">Estimate</span></label>
+        <div class="input-row"><input id="currentUtil" type="number" step="1"><span class="suffix">%</span></div>
+        <div class="field-note">Not in this workbook — placeholder against the 60% floor / 70% target / 80%+ excellent benchmark. Pull real utilization from Samsara before relying on this lever.</div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <button class="btn btn-ghost" id="resetBtn" type="button">Reset to this quarter's actuals</button>
+    </div>
+  </div>
+</section>
+
+<section class="workbench" id="levers" style="background:var(--paper);">
+  <div class="container">
+    <div class="section-label">Step 2 — The Levers, In Order</div>
+    <h2>Harnish's order, plus Einstein's eighth</h2>
+    <p class="lede">Each card shows a small nudge — usually 1% or 1 day — and what that nudge is worth this quarter. Adjust the nudge on any card to test bigger or smaller moves. Walked in the order Harnish lists them — Price through Inventory — with Truck Utilization appended as Einstein's eighth.</p>
+
+    <div class="lever-list" id="leverList"></div>
+
+    <div class="compare-note">
+      <div class="compare-col">
+        <h4 style="color:var(--status-notpursue)">Why Inventory ≠ Truck Utilization</h4>
+        <p>The classic Inventory lever is cash tied up in unsold goods. Einstein doesn't carry any — packing supplies get expensed the quarter they're bought, not held on the balance sheet — so this lever nets to $0 by construction, not by neglect. Truck utilization is real money, but it isn't a cash-conversion issue — it's an <strong>overhead / fixed-asset efficiency</strong> issue: fewer, fuller trucks means less paid for insurance and maintenance on capacity you're not using.</p>
+      </div>
+      <div class="compare-col">
+        <h4 style="color:var(--status-structural)">So it gets its own lever</h4>
+        <p>Truck Utilization runs as an eighth, Einstein-specific lever below — modeled the same way CashFlowStory models the standard seven, just built around what actually drives your cost structure: movers and trucks, not shelf inventory.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="workbench" id="swing">
+  <div class="container">
+    <div class="section-label">Step 3 — Combined Swing</div>
+    <h2>What all eight are worth, together</h2>
+    <p class="lede">Profit levers hit this quarter's P&amp;L. Cash levers unlock working capital once. Harnish's point stands either way: nobody argues these numbers are trivial once they see them.</p>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">This Quarter's Profit Impact</div>
+        <div class="stat-val mono" id="totalProfit">$0</div>
+        <div class="stat-sub">Price + Volume + COGS + Overhead + Truck Utilization</div>
+        <div class="stat-formula">Calculated straight off <b>this quarter's actual revenue, COGS, and overhead</b> — a 1% price move this quarter is worth 1% × this quarter's revenue. Deliberately <b>not annualized (not ×4)</b>: Einstein's revenue is seasonal (Q2 runs well above the annual average), so multiplying one quarter by 4 would overstate a peak quarter and understate a slow one. Track the trend across real quarters in History below instead of faking an annual number.</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">One-Time Cash Unlocked</div>
+        <div class="stat-val mono" id="totalCash">$0</div>
+        <div class="stat-sub">A/R + A/P + Materials on hand</div>
+        <div class="stat-formula">A <b>single, one-time unlock</b> — days improved × (this quarter's $ ÷ ~91 days in the quarter). Collect one day faster, and that cash frees up once; it doesn't recur the following quarter on its own.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="workbench" id="history" style="background:var(--paper);">
+  <div class="container">
+    <div class="section-label">Step 4 — Track It Over Time</div>
+    <h2>Quarter over quarter</h2>
+    <p class="lede">Each row is a quarter's actual numbers, run through the standard 1%/1-day nudges — a stable "what a small move was worth" comparison, independent of whatever you're currently testing above. This is a durable record: it lives in this file, not in your browser, so it survives across sessions and devices.</p>
+
+    <div class="table-wrap">
+      <table class="history" id="historyTable">
+        <thead>
+          <tr><th>Quarter</th><th>Revenue</th><th>COGS %</th><th>Opex</th><th>Profit Impact</th><th>Cash Unlocked</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+    <p style="margin-top:14px; font-size:13px;">To add next quarter: ask Clark to pull the new actuals and append a row here — same way Q2 2026 was added. Editing your inputs above doesn't change this table; it only changes when a quarter's snapshot in the file itself is updated.</p>
+  </div>
+</section>
+
+<section class="briefing" id="process">
+  <div class="container">
+    <div class="section-label">Step 5 — Run It Quarterly</div>
+    <h2>How Harnish prescribes the workshop</h2>
+    <p>Adapted from <em>Scaling Up</em>, p. 231 — run as a dedicated session each quarter, timed to Einstein's QGR close, not folded into a longer meeting.</p>
+
+    <div class="steps">
+      <div class="step"><div class="num">1</div><p><strong>Book a standalone Power of One session</strong> with the senior team — not a line item inside a longer meeting.</p></div>
+      <div class="step"><div class="num">2</div><p><strong>Work the eight levers one at a time</strong>, in order, using this page as the whiteboard.</p></div>
+      <div class="step"><div class="num">3</div><p><strong>Rank each lever</strong> — how much real room does the business have to move it this quarter?</p></div>
+      <div class="step"><div class="num">4</div><p><strong>Leave with 4–5 ideas</strong> the team will actually execute — not a long wish list.</p></div>
+      <div class="step"><div class="num">5</div><p><strong>Name an owner, an action, and a date</strong> for each idea chosen. No owner, no idea — use the Action Plan below.</p></div>
+    </div>
+
+    <h3 style="margin-top:28px;">Who's in the room</h3>
+    <p>Harnish's model calls for Sales, Marketing, Operations, and Finance together. Mapped to Einstein's leadership bench:</p>
+    <div class="table-wrap">
+      <table class="roster">
+        <tr><th>Book's Seat</th><th>Einstein Seat</th><th>Why they're there</th></tr>
+        <tr><td>Owner / Leadership</td><td>Cameron + Paul</td><td>Final call on which ideas get resourced</td></tr>
+        <tr><td>Finance</td><td>Ben Young (Prosper CFO)</td><td>Owns the numbers going into this page beforehand</td></tr>
+        <tr><td>Operations</td><td>Brian Herzig + Michael Vandenbroader</td><td>Reality-check Volume, COGS, and Truck Utilization against branch conditions</td></tr>
+        <tr><td>Sales / Customer</td><td>Amanda Ware</td><td>Speaks to Price sensitivity and the A/R collections tail</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="briefing" id="script">
+  <div class="container">
+    <div class="section-label">Step 6 — Discussion Script</div>
+    <h2>Walk the room, lever by lever</h2>
+    <p>Standing views below are Paul's own read as of July 2026 — start each lever there, then use the prompts to check if anything's changed. Under each lever: edit the prompts, then log ideas as they come up. Check the box on any idea worth acting on and pull it into the Action Plan when you're done.</p>
+
+    <div class="persist-note">Questions and ideas you add or remove are saved in this browser (localStorage) so a refresh won't lose them — but they won't follow you to a different browser, device, or the published link's next visitor. If a question should become the permanent default for every future quarter, ask Clark to bake it into the file, the way History entries are added.</div>
+
+    <div class="script-item" data-lever="price">
+      <div class="script-head"><h4>1. Price</h4><span class="chip" style="background:var(--status-strength)">Strength</span></div>
+      <div class="standing">"Price is a great one." — treat as the default first move each quarter.</div>
+      <ul class="prompt-list" data-prompt-lever="price"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="price"><button class="btn btn-ghost" data-add-btn="price" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="price" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="price">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="price"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="price" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="volume">
+      <div class="script-head"><h4>2. Volume</h4><span class="chip" style="background:var(--status-focus)">Focus Area</span></div>
+      <div class="standing">"We can focus on volume."</div>
+      <ul class="prompt-list" data-prompt-lever="volume"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="volume"><button class="btn btn-ghost" data-add-btn="volume" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="volume" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="volume">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="volume"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="volume" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="cogs">
+      <div class="script-head"><h4>3. Cost of Delivery (COGS)</h4><span class="chip" style="background:var(--status-focus)">Focus Area</span></div>
+      <div class="standing">"We can focus on cost of goods sold."</div>
+      <ul class="prompt-list" data-prompt-lever="cogs"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="cogs"><button class="btn btn-ghost" data-add-btn="cogs" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="cogs" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="cogs">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="cogs"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="cogs" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="overhead">
+      <div class="script-head"><h4>4. Overhead</h4><span class="chip" style="background:var(--status-strength)">Strength</span></div>
+      <div class="standing">"Operating expenses is a great one."</div>
+      <ul class="prompt-list" data-prompt-lever="overhead"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="overhead"><button class="btn btn-ghost" data-add-btn="overhead" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="overhead" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="overhead">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="overhead"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="overhead" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="ar">
+      <div class="script-head"><h4>5. Accounts Receivable</h4><span class="chip" style="background:var(--status-limited)">Limited Room</span></div>
+      <div class="standing">Collected almost entirely day-of-move; the only float is the collections tail — iPad/connectivity failures or an upset customer.</div>
+      <ul class="prompt-list" data-prompt-lever="ar"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ar"><button class="btn btn-ghost" data-add-btn="ar" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="ar" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="ar">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="ar"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="ar" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="ap">
+      <div class="script-head"><h4>6. Accounts Payable</h4><span class="chip" style="background:var(--status-notpursue)">Not Pursuing</span></div>
+      <div class="standing">Already paying most vendors as slowly as terms allow, and this is a relationship lever, not just a cash one — not looking to stretch further.</div>
+      <ul class="prompt-list" data-prompt-lever="ap"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ap"><button class="btn btn-ghost" data-add-btn="ap" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="ap" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="ap">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="ap"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="ap" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="materials">
+      <div class="script-head"><h4>7. Materials / Inventory</h4><span class="chip" style="background:var(--status-notpursue)">Minor Lever</span></div>
+      <div class="standing">Einstein doesn't carry packing supplies as inventory — they're expensed the quarter they're bought (Q2 actual: ~$325K in COGS). Nothing to "turn faster" here.</div>
+      <ul class="prompt-list" data-prompt-lever="materials"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="materials"><button class="btn btn-ghost" data-add-btn="materials" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="materials" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="materials">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="materials"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="materials" type="button">+ Add idea</button>
+    </div>
+
+    <div class="script-item" data-lever="truck">
+      <div class="script-head"><h4>8. Truck Utilization</h4><span class="chip" style="background:var(--status-structural)">Structural — Einstein's 8th Lever</span></div>
+      <div class="standing">Real inventory-equivalent room for a moving company is trucks and staffing, not shelf goods — fewer trucks running fuller beats more trucks running at half capacity.</div>
+      <ul class="prompt-list" data-prompt-lever="truck"></ul>
+      <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="truck"><button class="btn btn-ghost" data-add-btn="truck" type="button">Add</button></div>
+      <button class="prompt-reset" data-reset-lever="truck" type="button">Reset questions to default</button>
+      <table class="ideas-table" data-ideas-lever="truck">
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <tbody data-ideas-body="truck"></tbody>
+      </table>
+      <button class="add-idea-row" data-add-idea="truck" type="button">+ Add idea</button>
+    </div>
+
+    <div class="pull-bar">
+      <div class="pull-note">Pulls every checked idea above into the Action Plan below, tagged with its lever. Safe to click more than once — it only adds checked rows, and pulled rows are marked so you can see what's already in.</div>
+      <button class="btn btn-primary" id="pullIdeasBtn" type="button">Pull checked ideas into Action Plan ↓</button>
+    </div>
+  </div>
+</section>
+
+<section class="workbench" id="plan" style="background:var(--paper);">
+  <div class="container">
+    <div class="section-label">Step 7 — Leave With This</div>
+    <h2>Action plan — this quarter's 4 or 5</h2>
+    <p class="lede">Rows pulled from the Discussion Script land here editable — trim, reorder by rewriting, and rewrite freely to land on the final 4-5 you're prioritizing. Print or copy the finalized rows into the QGR tracker on Monday.com after the meeting.</p>
+
+    <div class="table-wrap">
+      <table class="plan-table" id="planTable">
+        <thead>
+          <tr><th style="width:20%">Idea</th><th style="width:12%">Lever</th><th style="width:13%">Who</th><th style="width:26%">What</th><th style="width:11%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
+        </thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+
+    <div class="no-print" style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="add-plan-row" id="addPlanRowBtn" type="button">+ Add row</button>
+      <button class="btn btn-primary" id="printBtn" type="button">Print action plan</button>
+      <button class="btn btn-ghost" id="clearPlanBtn" type="button">Clear rows</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop.</p>
+</footer>
+
+<script>
+(function() {
+  var fmt0 = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+
+  var ids = ['revenue','cogsPct','overhead','arDays','apDays','materials','numTrucks','costPerTruck','currentUtil'];
+  var DOLLAR_IDS = ['revenue','overhead','materials','costPerTruck'];
+  var fmtGroup = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }); // comma grouping, no currency symbol (prefix "$" is separate)
+  var QUARTER_DAYS = 91; // ~365/4 — used for A/R and A/P cash-lever math, not for annualizing profit
+
+  /* ── Quarterly snapshots — the durable historical record. Add a new entry each quarter; don't edit past ones. ── */
+  var QUARTERS = [
+    {
+      id: 'q2-2026',
+      label: 'Q2 2026 (May–Jul)',
+      file: 'Einstein_Q2_YTD_Estimated_Actuals_Jul2026_v4.xlsx',
+      tabs: "'Q2 Fin. Actuals - Allocated' (revenue, NOI) + 'Q2 & YTD Estimated Actuals' (COGS/opex split) + 'SRC Truck Counts'",
+      numbers: {
+        revenue: 8403646,      // Q2 Est. (3 mo), 'Q2 & YTD Estimated Actuals'!E6 — ties to Allocated tab's $8,403,285 within ~$361 rounding
+        cogsPct: 52.33,        // Total Cost of Revenue / Revenue, Q2 3-mo
+        overhead: 2598743,     // Total Operating Expenses, Q2 3-mo (pre-D&A)
+        arDays: 4,             // estimate — no trade A/R on the balance sheet
+        apDays: 45,            // estimate — B/S payable balance too small/noisy to back into a day count
+        materials: 0,          // no B/S inventory line — packing supplies expensed as COGS ($325,291 in Q2)
+        numTrucks: 81.2,       // Q2 avg company-wide, 'SRC Truck Counts'
+        costPerTruck: 5628,    // (Truck & Equipment $71,156 + Veh. Repair/Maint $163,712 + Insurance Auto/GL/Cargo $221,920) / 81.17 trucks
+        currentUtil: 65        // estimate — utilization % isn't in this workbook
+      }
+    }
+  ];
+  var currentQuarterId = QUARTERS[QUARTERS.length - 1].id;
+
+  function getQuarter(id) {
+    for (var i = 0; i < QUARTERS.length; i++) { if (QUARTERS[i].id === id) return QUARTERS[i]; }
+    return QUARTERS[QUARTERS.length - 1];
+  }
+
+  var leverNudgeDefaults = {
+    price: 1, volume: 1, cogs: 1, overhead: 1, materials: 1, ar: 1, ap: 0, truck: 5
+  };
+  var leverNudges = Object.assign({}, leverNudgeDefaults);
+
+  var leverDefs = [
+    { key: 'price',    name: 'Price',                unit: '%',    status: 'strength',   chip: 'Strength',
+      prompt: 'A 1% price move, volume held flat, drops almost straight through.' },
+    { key: 'volume',   name: 'Volume',                unit: '%',    status: 'focus',      chip: 'Focus Area',
+      prompt: 'More jobs at the same margin — scales gross profit, not revenue.' },
+    { key: 'cogs',     name: 'Cost of Delivery (COGS)', unit: '%',  status: 'focus',      chip: 'Focus Area',
+      prompt: 'Labor, fuel, damage/claims — a 1% cut is a dollar-for-dollar profit gain.' },
+    { key: 'overhead', name: 'Overhead',               unit: '%',   status: 'strength',   chip: 'Strength',
+      prompt: 'Fixed costs — software, facilities, SG&A. Also dollar-for-dollar.' },
+    { key: 'ar',       name: 'Accounts Receivable',    unit: 'days',status: 'limited',    chip: 'Limited Room',
+      prompt: 'Days improvement on the small collections-issue tail only.' },
+    { key: 'ap',       name: 'Accounts Payable',       unit: 'days',status: 'notpursue',  chip: 'Not Pursuing',
+      prompt: 'Already near max terms; shown for reference, default is 0.' },
+    { key: 'materials',name: 'Materials / Inventory',  unit: '%',   status: 'notpursue',  chip: 'Minor Lever',
+      prompt: 'Packing supplies on hand — a small, low-priority number.' },
+    { key: 'truck',    name: 'Truck Utilization',      unit: 'pts', status: 'structural', chip: 'Structural — 8th Lever',
+      prompt: 'Right-size the fleet toward target utilization; carry fewer idle trucks.' }
+  ];
+
+  var statusColorVar = {
+    strength: 'var(--status-strength)', focus: 'var(--status-focus)', limited: 'var(--status-limited)',
+    notpursue: 'var(--status-notpursue)', structural: 'var(--status-structural)'
+  };
+
+  function getInputs() {
+    var v = {};
+    ids.forEach(function(id) { v[id] = parseFloat(String(document.getElementById(id).value).replace(/,/g, '')) || 0; });
+    return v;
+  }
+
+  function computeImpacts(v, nudges) {
+    nudges = nudges || leverNudges;
+    var cogsVal = v.revenue * v.cogsPct / 100;
+    var grossProfit = v.revenue - cogsVal;
+    var trucksNeeded = v.currentUtil > 0 ? v.numTrucks * (v.currentUtil / Math.min(100, v.currentUtil + nudges.truck)) : v.numTrucks;
+    var trucksReduced = Math.max(0, v.numTrucks - trucksNeeded);
+
+    var impacts = {
+      price:     v.revenue * (nudges.price / 100),
+      volume:    grossProfit * (nudges.volume / 100),
+      cogs:      cogsVal * (nudges.cogs / 100),
+      overhead:  v.overhead * (nudges.overhead / 100),
+      truck:     trucksReduced * v.costPerTruck,
+      ar:        (v.revenue / QUARTER_DAYS) * nudges.ar,
+      ap:        (cogsVal / QUARTER_DAYS) * nudges.ap,
+      materials: v.materials * (nudges.materials / 100)
+    };
+    return impacts;
+  }
+
+  function renderLevers() {
+    var v = getInputs();
+    var impacts = computeImpacts(v);
+    var ordered = leverDefs;
+
+    var listEl = document.getElementById('leverList');
+    listEl.innerHTML = '';
+    ordered.forEach(function(def, i) {
+      var isCash = (def.key === 'ar' || def.key === 'ap' || def.key === 'materials');
+      var card = document.createElement('div');
+      card.className = 'lever-card';
+      card.innerHTML =
+        '<div class="lever-rank">' + (i + 1) + '</div>' +
+        '<div class="lever-main">' +
+          '<div class="lever-meta">' +
+            '<h4>' + def.name + '</h4>' +
+            '<span class="chip" style="background:' + statusColorVar[def.status] + '">' + def.chip + '</span>' +
+          '</div>' +
+          '<div class="lever-prompt">' + def.prompt + '</div>' +
+        '</div>' +
+        '<div class="lever-controls">' +
+          '<div class="lever-impact' + (isCash ? ' cash' : '') + '">' + fmt0.format(Math.round(impacts[def.key])) + '</div>' +
+          '<div class="nudge"><span>nudge</span><input type="number" step="0.5" value="' + leverNudges[def.key] + '" data-key="' + def.key + '"><span>' + def.unit + '</span></div>' +
+        '</div>';
+      listEl.appendChild(card);
+    });
+
+    listEl.querySelectorAll('.nudge input').forEach(function(inp) {
+      inp.addEventListener('input', function() {
+        leverNudges[inp.getAttribute('data-key')] = parseFloat(inp.value) || 0;
+        renderLevers();
+        renderTotals();
+      });
+    });
+
+    return impacts;
+  }
+
+  function renderTotals() {
+    var v = getInputs();
+    var impacts = computeImpacts(v);
+    var profitTotal = impacts.price + impacts.volume + impacts.cogs + impacts.overhead + impacts.truck;
+    var cashTotal = impacts.ar + impacts.ap + impacts.materials;
+    document.getElementById('totalProfit').textContent = fmt0.format(Math.round(profitTotal));
+    document.getElementById('totalCash').textContent = fmt0.format(Math.round(cashTotal));
+  }
+
+  function renderHistory() {
+    var body = document.getElementById('historyBody');
+    body.innerHTML = '';
+    QUARTERS.forEach(function(q) {
+      var impacts = computeImpacts(q.numbers, leverNudgeDefaults);
+      var profitTotal = impacts.price + impacts.volume + impacts.cogs + impacts.overhead + impacts.truck;
+      var cashTotal = impacts.ar + impacts.ap + impacts.materials;
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + q.label + '</td>' +
+        '<td>' + fmt0.format(Math.round(q.numbers.revenue)) + '</td>' +
+        '<td>' + q.numbers.cogsPct.toFixed(1) + '%</td>' +
+        '<td>' + fmt0.format(Math.round(q.numbers.overhead)) + '</td>' +
+        '<td>' + fmt0.format(Math.round(profitTotal)) + '</td>' +
+        '<td>' + fmt0.format(Math.round(cashTotal)) + '</td>';
+      body.appendChild(tr);
+    });
+  }
+
+  function renderAll() { renderLevers(); renderTotals(); renderHistory(); }
+
+  function loadQuarter(id) {
+    var q = getQuarter(id);
+    currentQuarterId = q.id;
+    ids.forEach(function(fid) {
+      var val = q.numbers[fid];
+      document.getElementById(fid).value = (DOLLAR_IDS.indexOf(fid) !== -1) ? fmtGroup.format(val) : val;
+    });
+    document.getElementById('quarterProvenance').textContent = 'Loaded from ' + q.file + ' — ' + q.tabs;
+    document.getElementById('flagBannerText').textContent =
+      'Revenue, COGS%, Opex, fleet size, and carrying cost/truck are pulled from ' + q.file + ' (' + q.tabs + '). ' +
+      'A/R days, A/P days, and truck utilization are estimates — flagged individually below — not in this workbook.';
+    renderAll();
+  }
+
+  function populateQuarterSelect() {
+    var sel = document.getElementById('quarterSelect');
+    sel.innerHTML = '';
+    QUARTERS.forEach(function(q) {
+      var opt = document.createElement('option');
+      opt.value = q.id; opt.textContent = q.label;
+      sel.appendChild(opt);
+    });
+    sel.value = currentQuarterId;
+    sel.addEventListener('change', function() { loadQuarter(sel.value); });
+  }
+
+  ids.forEach(function(id) {
+    var el = document.getElementById(id);
+    el.addEventListener('input', renderAll);
+    if (DOLLAR_IDS.indexOf(id) !== -1) {
+      el.addEventListener('focus', function() { el.value = el.value.replace(/,/g, ''); });
+      el.addEventListener('blur', function() {
+        var n = parseFloat(el.value.replace(/,/g, '')) || 0;
+        el.value = fmtGroup.format(n);
+      });
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', function() {
+    leverNudges = Object.assign({}, leverNudgeDefaults);
+    loadQuarter(currentQuarterId);
+  });
+
+  populateQuarterSelect();
+  loadQuarter(currentQuarterId);
+
+  /* ── Discussion Script: editable prompts + per-lever ideas + Action Plan, persisted to localStorage ── */
+  var STORAGE_KEY = 'pow1_session_v1';
+  var LEVER_KEYS = ['price','volume','cogs','overhead','ar','ap','materials','truck'];
+  var LEVER_LABELS = {
+    price: 'Price', volume: 'Volume', cogs: 'COGS', overhead: 'Overhead',
+    ar: 'A/R', ap: 'A/P', materials: 'Materials', truck: 'Truck Utilization'
+  };
+  var FIELD_LABELS = { idea: 'Idea', lever: 'Lever', who: 'Who', what: 'What', when: 'When', impact: '$ Impact' };
+
+  var DEFAULT_PROMPTS = {
+    price: [
+      'When did we last move price or the fuel/materials surcharge, and on which branches?',
+      "Which channels or repeat/referral segments have room we're not using?",
+      'Any rate-card difference by season or day-of-week worth testing before a blanket increase?'
+    ],
+    volume: [
+      'Which branches are below the 70% utilization target — is that a demand problem or a capacity problem?',
+      "What's the current close rate on estimates, and where is it slipping?",
+      'Is marketing spend following the branches with spare truck capacity?'
+    ],
+    cogs: [
+      'How is the PH contractor-to-employee transition moving the cost-per-move number?',
+      "What's the damage/claims trend doing to COGS given the insurance crisis work underway?",
+      'Any crew-comp or scorecard change this quarter that shifts labor cost per job?'
+    ],
+    overhead: [
+      'Any software/vendor contract up for renewal or renegotiation this quarter? (This tool killing the CashFlowStory line is exhibit A.)',
+      'Facilities cost trend post-N. Austin move-in?',
+      'Any leadership or SG&A comp change landing this quarter?'
+    ],
+    ar: [
+      'Is the collections-tail % of jobs shrinking quarter over quarter?',
+      'Track it as an ops KPI even though the dollar lever here is intentionally small.'
+    ],
+    ap: [
+      'Confirm: no deliberate move planned here this quarter.'
+    ],
+    materials: [
+      'Any shrinkage or waste in what gets bought worth a five-minute mention? If not, move on.'
+    ],
+    truck: [
+      'Which branches sit below 60% utilization (red per the standing benchmark) and are candidates for fleet right-sizing?',
+      'Does the HUB insurance renewal give a natural decision point to shed underused units, the way TED/BET did?',
+      'If we cut N trucks, do we free crew hours onto the remaining fleet, or lose capacity we actually need in peak season?'
+    ]
+  };
+
+  var promptState = {};
+  var ideasState = {};
+  var planState = [];
+
+  function loadSession() {
+    var stored = {};
+    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { stored = {}; }
+    LEVER_KEYS.forEach(function(k) {
+      promptState[k] = (stored.prompts && stored.prompts[k]) ? stored.prompts[k].slice() : DEFAULT_PROMPTS[k].slice();
+      ideasState[k] = (stored.ideas && stored.ideas[k]) ? stored.ideas[k] : [];
+    });
+    planState = stored.actionPlan || [];
+  }
+
+  function saveSession() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); } catch (e) {}
+  }
+
+  function renderPrompts(lever) {
+    var ul = document.querySelector('.prompt-list[data-prompt-lever="' + lever + '"]');
+    if (!ul) return;
+    ul.innerHTML = '';
+    promptState[lever].forEach(function(text, idx) {
+      var li = document.createElement('li');
+      var span = document.createElement('span');
+      span.className = 'prompt-text';
+      span.textContent = text;
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'prompt-remove'; btn.textContent = '×';
+      btn.setAttribute('aria-label', 'Remove question');
+      btn.addEventListener('click', function() {
+        promptState[lever].splice(idx, 1);
+        saveSession();
+        renderPrompts(lever);
+      });
+      li.appendChild(span); li.appendChild(btn);
+      ul.appendChild(li);
+    });
+  }
+
+  function wireAddPrompt(lever) {
+    var input = document.querySelector('input[data-add-lever="' + lever + '"]');
+    var btn = document.querySelector('button[data-add-btn="' + lever + '"]');
+    function doAdd() {
+      var val = input.value.trim();
+      if (!val) return;
+      promptState[lever].push(val);
+      input.value = '';
+      saveSession();
+      renderPrompts(lever);
+    }
+    btn.addEventListener('click', doAdd);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); doAdd(); } });
+  }
+
+  function wireResetPrompts(lever) {
+    document.querySelector('button[data-reset-lever="' + lever + '"]').addEventListener('click', function() {
+      promptState[lever] = DEFAULT_PROMPTS[lever].slice();
+      saveSession();
+      renderPrompts(lever);
+    });
+  }
+
+  function renderIdeas(lever) {
+    var tbody = document.querySelector('tbody[data-ideas-body="' + lever + '"]');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    ideasState[lever].forEach(function(idea, idx) {
+      var tr = document.createElement('tr');
+      if (idea.pulled) tr.className = 'pulled';
+
+      var tdPull = document.createElement('td');
+      tdPull.className = 'col-pull';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.checked = !!idea.checked; cb.disabled = !!idea.pulled;
+      cb.addEventListener('change', function() { idea.checked = cb.checked; saveSession(); });
+      tdPull.appendChild(cb);
+      tr.appendChild(tdPull);
+
+      ['idea','who','what','when','impact'].forEach(function(field) {
+        var td = document.createElement('td');
+        td.contentEditable = idea.pulled ? 'false' : 'true';
+        td.textContent = idea[field] || '';
+        td.setAttribute('data-placeholder', FIELD_LABELS[field]);
+        td.addEventListener('blur', function() { idea[field] = td.textContent.trim(); saveSession(); });
+        tr.appendChild(td);
+      });
+
+      var tdRemove = document.createElement('td');
+      tdRemove.className = 'col-remove';
+      if (idea.pulled) {
+        var tag = document.createElement('span');
+        tag.className = 'pulled-tag'; tag.textContent = 'Sent';
+        tdRemove.appendChild(tag);
+      } else {
+        var rmBtn = document.createElement('button');
+        rmBtn.type = 'button'; rmBtn.className = 'row-remove-btn'; rmBtn.textContent = '×';
+        rmBtn.setAttribute('aria-label', 'Remove idea');
+        rmBtn.addEventListener('click', function() {
+          ideasState[lever].splice(idx, 1);
+          saveSession();
+          renderIdeas(lever);
+        });
+        tdRemove.appendChild(rmBtn);
+      }
+      tr.appendChild(tdRemove);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function wireAddIdea(lever) {
+    document.querySelector('button[data-add-idea="' + lever + '"]').addEventListener('click', function() {
+      ideasState[lever].push({ idea: '', who: '', what: '', when: '', impact: '', checked: false, pulled: false });
+      saveSession();
+      renderIdeas(lever);
+    });
+  }
+
+  function renderPlan() {
+    var tbody = document.getElementById('planBody');
+    tbody.innerHTML = '';
+    planState.forEach(function(row, idx) {
+      var tr = document.createElement('tr');
+      ['idea','lever','who','what','when','impact'].forEach(function(field) {
+        var td = document.createElement('td');
+        td.contentEditable = 'true';
+        td.textContent = row[field] || '';
+        td.setAttribute('data-placeholder', FIELD_LABELS[field]);
+        td.addEventListener('blur', function() { row[field] = td.textContent.trim(); saveSession(); });
+        tr.appendChild(td);
+      });
+      var tdRemove = document.createElement('td');
+      tdRemove.className = 'col-remove no-print';
+      var rmBtn = document.createElement('button');
+      rmBtn.type = 'button'; rmBtn.className = 'plan-remove-btn'; rmBtn.textContent = '×';
+      rmBtn.setAttribute('aria-label', 'Remove row');
+      rmBtn.addEventListener('click', function() {
+        planState.splice(idx, 1);
+        saveSession();
+        renderPlan();
+      });
+      tdRemove.appendChild(rmBtn);
+      tr.appendChild(tdRemove);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addPlanRow() {
+    planState.push({ idea: '', lever: '', who: '', what: '', when: '', impact: '' });
+    saveSession();
+    renderPlan();
+  }
+
+  function clearPlan() {
+    planState = [];
+    saveSession();
+    renderPlan();
+  }
+
+  function pullCheckedIdeas() {
+    var pulledAny = false;
+    LEVER_KEYS.forEach(function(lever) {
+      ideasState[lever].forEach(function(idea) {
+        if (idea.checked && !idea.pulled) {
+          planState.push({
+            idea: idea.idea || '', lever: LEVER_LABELS[lever], who: idea.who || '',
+            what: idea.what || '', when: idea.when || '', impact: idea.impact || ''
+          });
+          idea.pulled = true;
+          pulledAny = true;
+        }
+      });
+    });
+    if (pulledAny) {
+      saveSession();
+      renderPlan();
+      LEVER_KEYS.forEach(renderIdeas);
+    }
+  }
+
+  loadSession();
+  LEVER_KEYS.forEach(function(lever) {
+    renderPrompts(lever);
+    wireAddPrompt(lever);
+    wireResetPrompts(lever);
+    renderIdeas(lever);
+    wireAddIdea(lever);
+  });
+  renderPlan();
+
+  document.getElementById('pullIdeasBtn').addEventListener('click', pullCheckedIdeas);
+  document.getElementById('addPlanRowBtn').addEventListener('click', addPlanRow);
+  document.getElementById('clearPlanBtn').addEventListener('click', clearPlan);
+  document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
+
+  /* ── Nav active state on scroll ── */
+  var sections = ['numbers','levers','swing','history','process','script','plan'].map(function(id) { return document.getElementById(id); });
+  var navLinks = document.querySelectorAll('nav a');
+  window.addEventListener('scroll', function() {
+    var pos = window.scrollY + 120;
+    var current = sections[0].id;
+    sections.forEach(function(s) { if (s.offsetTop <= pos) current = s.id; });
+    navLinks.forEach(function(a) { a.classList.toggle('active', a.getAttribute('href') === '#' + current); });
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
