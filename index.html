@@ -6,6 +6,9 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
 <!-- v1.1 2026-07-21 — Albert audit pass: noindex, print fix, nudge focus fix, A/R–A/P reference labels, save-failure warning -->
+<!-- v1.2 2026-07-29 — Master Backlog handoff: Priority + Department columns on every idea and plan row (labels + ids pulled
+     live from board 18408300070), JSON export + copyable brief for the COS cross-reference/dedupe/file loop.
+     Storage key deliberately UNCHANGED (pow1_session_v1) — the Q2 QGR session data stays intact; new fields default blank. -->
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -368,7 +371,9 @@
   .prompt-reset:hover { color: rgba(255,255,255,0.75); }
 
   /* ── Ideas table (per lever, feeds Action Plan) ── */
-  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; }
+  /* v1.2: Priority + Department columns push the table past narrow viewports — let the lever card scroll it */
+  .script-item { overflow-x: auto; }
+  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; min-width: 880px; }
   .ideas-table th {
     text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
     color: rgba(255,255,255,0.45); font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.15);
@@ -390,6 +395,33 @@
   .row-remove-btn:hover { border-color: #E8877A; color: #E8877A; }
   .ideas-table tr.pulled td { opacity: 0.45; }
   .pulled-tag { font-size: 10px; color: var(--e-orange); font-weight: 700; text-transform: uppercase; }
+
+  /* v1.2: Master-Backlog handoff cells — dropdowns, not free text, so the exported label matches Monday exactly */
+  .ideas-table .col-tag { width: 118px; }
+  .cell-select {
+    width: 100%; font-family: inherit; font-size: 12px; padding: 4px 6px; border-radius: 5px;
+    border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: white; cursor: pointer;
+  }
+  .cell-select:focus-visible { outline: 2px solid var(--e-orange); outline-offset: 1px; }
+  .cell-select:disabled { opacity: 0.55; cursor: default; }
+  .cell-select option { background: #27343D; color: white; }
+  .cell-select.is-empty { color: rgba(255,255,255,0.38); }
+  .plan-table .cell-select {
+    border-color: var(--border); background: var(--paper); color: var(--ink); font-size: 12.5px;
+  }
+  .plan-table .cell-select option { background: var(--paper); color: var(--ink); }
+  .plan-table .cell-select.is-empty { color: var(--text-soft); }
+  .plan-table .cell-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  /* v1.2: export bar */
+  .export-bar {
+    margin-top: 26px; padding: 16px 18px; border-radius: var(--radius);
+    border: 1px solid var(--border); background: var(--workbench);
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
+  }
+  .export-bar .export-note { font-size: 12.5px; color: var(--text-soft); flex: 1 1 340px; margin: 0; }
+  .tally { font-size: 12px; color: var(--text-soft); }
+  .tally strong { color: var(--ink); }
   .add-idea-row {
     background: none; border: 1px dashed rgba(255,255,255,0.25); color: rgba(255,255,255,0.6);
     font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-bottom: 6px;
@@ -441,6 +473,11 @@
     section.workbench#plan { background: white !important; padding: 0 !important; }
     .plan-table th { background: white !important; color: black !important; border: 1px solid #999; }
     .plan-table td { background: white !important; color: black !important; border-color: #999; }
+    /* v1.2: tags should read as plain text on paper, not as form controls */
+    .plan-table .cell-select {
+      background: white !important; color: black !important; border: none !important;
+      -webkit-appearance: none; appearance: none; padding: 0;
+    }
     #plan h2, #plan .lede, #plan .section-label { color: black !important; }
   }
 
@@ -647,7 +684,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="price"><button class="btn btn-ghost" data-add-btn="price" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="price" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="price">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="price"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="price" type="button">+ Add idea</button>
@@ -660,7 +697,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="volume"><button class="btn btn-ghost" data-add-btn="volume" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="volume" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="volume">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="volume"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="volume" type="button">+ Add idea</button>
@@ -673,7 +710,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="cogs"><button class="btn btn-ghost" data-add-btn="cogs" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="cogs" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="cogs">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="cogs"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="cogs" type="button">+ Add idea</button>
@@ -686,7 +723,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="overhead"><button class="btn btn-ghost" data-add-btn="overhead" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="overhead" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="overhead">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="overhead"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="overhead" type="button">+ Add idea</button>
@@ -699,7 +736,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ar"><button class="btn btn-ghost" data-add-btn="ar" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ar" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ar">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ar"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ar" type="button">+ Add idea</button>
@@ -712,7 +749,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ap"><button class="btn btn-ghost" data-add-btn="ap" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ap" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ap">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ap"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ap" type="button">+ Add idea</button>
@@ -725,7 +762,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="materials"><button class="btn btn-ghost" data-add-btn="materials" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="materials" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="materials">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="materials"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="materials" type="button">+ Add idea</button>
@@ -738,7 +775,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="truck"><button class="btn btn-ghost" data-add-btn="truck" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="truck" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="truck">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="truck"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="truck" type="button">+ Add idea</button>
@@ -760,7 +797,7 @@
     <div class="table-wrap">
       <table class="plan-table" id="planTable">
         <thead>
-          <tr><th style="width:20%">Idea</th><th style="width:12%">Lever</th><th style="width:13%">Who</th><th style="width:26%">What</th><th style="width:11%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
+          <tr><th style="width:17%">Idea</th><th style="width:9%">Lever</th><th style="width:11%">Priority</th><th style="width:13%">Department</th><th style="width:10%">Who</th><th style="width:20%">What</th><th style="width:10%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
         </thead>
         <tbody id="planBody"></tbody>
       </table>
@@ -771,11 +808,26 @@
       <button class="btn btn-primary" id="printBtn" type="button">Print action plan</button>
       <button class="btn btn-ghost" id="clearPlanBtn" type="button">Clear rows</button>
     </div>
+
+    <div class="export-bar no-print">
+      <p class="export-note">
+        <strong>Hand off to a Chief of Staff.</strong> Exports every idea from all 8 levers — action-plan rows and the ones
+        left behind — each tagged with its Priority and Department. Both tags use the
+        <em>Einstein's Master Backlog</em> board's own labels and carry Monday's internal IDs, so the COS can
+        cross-reference, dedupe against the 521 existing items, and file the new ideas into the right group without
+        guessing at names. Fill in a tag on any idea you want acted on; untagged ideas still export, marked untagged.
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button class="btn btn-primary" id="exportJsonBtn" type="button">⬇ Export for backlog (JSON)</button>
+        <button class="btn btn-ghost" id="copyBriefBtn" type="button">📋 Copy handoff brief</button>
+      </div>
+      <p class="tally" id="exportTally"></p>
+    </div>
   </div>
 </section>
 
 <footer>
-  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop. <span style="opacity:.7">v1.1 · 2026-07-21</span></p>
+  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop. <span style="opacity:.7">v1.2 · 2026-07-29</span></p>
 </footer>
 
 <script>
@@ -1003,6 +1055,103 @@
   };
   var FIELD_LABELS = { idea: 'Idea', lever: 'Lever', who: 'Who', what: 'What', when: 'When', impact: '$ Impact' };
 
+  /* ── v1.2: Master Backlog handoff vocabulary ──────────────────────────────────────────────
+     Pulled live from board 18408300070 ("Einstein's Master Backlog") on 2026-07-29. Labels are
+     reproduced verbatim so a COS can match them by eye; the numeric ids are what actually matter
+     to the Monday API and are the authoritative key on export (label text — notably the emoji in
+     "Critical" — is easy to mangle in transit, an id is not).
+     If the board's labels or groups change, update these three tables and nothing else. */
+  var BACKLOG = {
+    boardId: '18408300070',
+    boardName: "Einstein's Master Backlog",
+    boardUrl: 'https://einsteinmoving.monday.com/boards/18408300070',
+    priorityColumnId: 'priority',   // status column "Priority"
+    whoColumnId: 'status_1__1',     // status column "Who?" — the department tag that sits alongside the group
+    // Board order, minus "DONE" and the blank label — neither is a landing state for a fresh idea.
+    priorities: [
+      { label: 'QG',             labelId: 1   },
+      { label: 'Super Critical', labelId: 2   },
+      { label: 'Critical ⚠️️', labelId: 10 },
+      { label: 'High',           labelId: 110 },
+      { label: 'Medium',         labelId: 109 },
+      { label: 'Low',            labelId: 7   },
+      { label: 'Reminder',       labelId: 0   }
+    ],
+    // The board's real groups, in board order. "Completed Previous Quarterly Goals" is omitted —
+    // a new idea never lands there. `who` maps the group onto the board's "Who?" department label
+    // where that mapping is unambiguous, so the COS gets both columns filled from one choice.
+    departments: [
+      { title: 'Inbox',                                              groupId: 'new_group80987__1' },
+      { title: 'Q3 2026 Quarterly Goals',                            groupId: 'new_group63968__1' },
+      { title: 'Strategy - Cameron/Paul',                            groupId: 'new_group61012',   who: 'Strategy',                  whoId: 9  },
+      { title: 'Sales - Amanda/Nhel and Tetet',                      groupId: 'new_group91044',   who: 'Sales',                     whoId: 0  },
+      { title: 'Damages/Customer Service - Amanda/Carly',            groupId: 'emailed_pulses',   who: 'Damages/Customer Service',  whoId: 10 },
+      { title: 'Operations - Mike',                                  groupId: 'new_group',        who: 'Operations',                whoId: 1  },
+      { title: 'Employee Experience, Hiring and HR - Anne/Jalissa',  groupId: 'new_group84217__1', who: 'HR',                       whoId: 2  },
+      { title: 'Information Technology (IT) and Software - Matisen/Fabian', groupId: 'new_group68850', who: 'IT',                   whoId: 11 },
+      { title: 'Data/Revenue Ops - Matisen',                         groupId: 'new_group69586',   who: 'Data/Rev Ops',              whoId: 6  },
+      { title: 'CTO Group - Matisen',                                groupId: 'group_mkpwvtjv',   who: 'IT',                        whoId: 11 },
+      { title: 'Marketing - Cameron/Matisen/Kickpoint',              groupId: 'new_group43597',   who: 'Marketing',                 whoId: 4  },
+      { title: 'Finance - Paul/Ben',                                 groupId: 'new_group__1',     who: 'Finance',                   whoId: 7  },
+      { title: 'Physical Property - Paul',                           groupId: 'group_title',      who: 'Physical Property',         whoId: 8  },
+      { title: 'Culture/Team Building/Just for Fun - Cameron/Brian', groupId: 'new_group76623',   who: 'Just for Fun',              whoId: 12 },
+      { title: 'CTXH Region - Brian',                                groupId: 'new_group76622',   who: 'CTX Regional',              whoId: 13 },
+      { title: 'DFWT Region - Mike',                                 groupId: 'new_group5495__1', who: 'DFW Regional',              whoId: 14 },
+      { title: 'Content Creation - Austin L',                        groupId: 'group_mm2cwv55',   who: 'Marketing',                 whoId: 4  },
+      { title: 'Quarterly Theme Queue',                              groupId: 'new_group16502__1' }
+    ]
+  };
+
+  function findPriority(label) {
+    for (var i = 0; i < BACKLOG.priorities.length; i++) {
+      if (BACKLOG.priorities[i].label === label) return BACKLOG.priorities[i];
+    }
+    return null;
+  }
+  function findDepartment(title) {
+    for (var i = 0; i < BACKLOG.departments.length; i++) {
+      if (BACKLOG.departments[i].title === title) return BACKLOG.departments[i];
+    }
+    return null;
+  }
+
+  /* Builds one dropdown cell bound to `row[field]`. Options carry plain label text as the value so
+     older sessions (which have no priority/dept at all) simply render blank rather than breaking. */
+  function makeSelectCell(row, field, options, placeholder, disabled, onChange) {
+    var td = document.createElement('td');
+    td.className = 'col-tag';
+    var sel = document.createElement('select');
+    sel.className = 'cell-select';
+    sel.disabled = !!disabled;
+    var blank = document.createElement('option');
+    blank.value = ''; blank.textContent = placeholder;
+    sel.appendChild(blank);
+    options.forEach(function(opt) {
+      var o = document.createElement('option');
+      o.value = opt.label || opt.title;
+      o.textContent = opt.label || opt.title;
+      sel.appendChild(o);
+    });
+    var current = row[field] || '';
+    // A value saved before an option was renamed shouldn't vanish silently — keep it, flagged.
+    if (current && !Array.prototype.some.call(sel.options, function(o) { return o.value === current; })) {
+      var orphan = document.createElement('option');
+      orphan.value = current; orphan.textContent = current + ' (not on board)';
+      sel.appendChild(orphan);
+    }
+    sel.value = current;
+    sel.classList.toggle('is-empty', !current);
+    sel.setAttribute('aria-label', placeholder);
+    sel.addEventListener('change', function() {
+      row[field] = sel.value;
+      sel.classList.toggle('is-empty', !sel.value);
+      saveSession();
+      if (onChange) onChange();
+    });
+    td.appendChild(sel);
+    return td;
+  }
+
   var DEFAULT_PROMPTS = {
     price: [
       'When did we last move hourly rates or travel charges, and on which branches?',
@@ -1141,6 +1290,21 @@
     });
   }
 
+  /* v1.2: a pulled idea exists in two places — the lever table and the Action Plan. Tag it once.
+     Matches on idea text + lever; if the plan row was reworded there's no match and this is a
+     deliberate no-op (the plan row keeps whatever it was given directly). */
+  function syncTagsToPlan(idea, leverLabel) {
+    var touched = false;
+    planState.forEach(function(row) {
+      if (row.lever === leverLabel && row.idea && row.idea === idea.idea) {
+        row.priority = idea.priority || '';
+        row.dept = idea.dept || '';
+        touched = true;
+      }
+    });
+    if (touched) { saveSession(); renderPlan(); }
+  }
+
   function renderIdeas(lever) {
     var tbody = document.querySelector('tbody[data-ideas-body="' + lever + '"]');
     if (!tbody) return;
@@ -1157,7 +1321,23 @@
       tdPull.appendChild(cb);
       tr.appendChild(tdPull);
 
-      ['idea','who','what','when','impact'].forEach(function(field) {
+      var ideaTd = document.createElement('td');
+      ideaTd.contentEditable = idea.pulled ? 'false' : 'true';
+      ideaTd.textContent = idea.idea || '';
+      ideaTd.setAttribute('data-placeholder', FIELD_LABELS.idea);
+      ideaTd.addEventListener('blur', function() { idea.idea = ideaTd.textContent.trim(); saveSession(); updateTally(); });
+      tr.appendChild(ideaTd);
+
+      // v1.2: Priority + Department stay editable after a pull — evaluation happens after the room picks its 4-5.
+      // If this idea is already in the Action Plan, tagging it here fills the plan row too, so nothing gets tagged twice.
+      function syncTags() {
+        if (idea.pulled) syncTagsToPlan(idea, LEVER_LABELS[lever]);
+        updateTally();
+      }
+      tr.appendChild(makeSelectCell(idea, 'priority', BACKLOG.priorities, 'Priority…', false, syncTags));
+      tr.appendChild(makeSelectCell(idea, 'dept', BACKLOG.departments, 'Department…', false, syncTags));
+
+      ['who','what','when','impact'].forEach(function(field) {
         var td = document.createElement('td');
         td.contentEditable = idea.pulled ? 'false' : 'true';
         td.textContent = idea[field] || '';
@@ -1190,9 +1370,10 @@
 
   function wireAddIdea(lever) {
     document.querySelector('button[data-add-idea="' + lever + '"]').addEventListener('click', function() {
-      ideasState[lever].push({ idea: '', who: '', what: '', when: '', impact: '', checked: false, pulled: false });
+      ideasState[lever].push({ idea: '', priority: '', dept: '', who: '', what: '', when: '', impact: '', checked: false, pulled: false });
       saveSession();
       renderIdeas(lever);
+      updateTally();
     });
   }
 
@@ -1201,7 +1382,19 @@
     tbody.innerHTML = '';
     planState.forEach(function(row, idx) {
       var tr = document.createElement('tr');
-      ['idea','lever','who','what','when','impact'].forEach(function(field) {
+      ['idea','lever'].forEach(function(field) {
+        var td = document.createElement('td');
+        td.contentEditable = 'true';
+        td.textContent = row[field] || '';
+        td.setAttribute('data-placeholder', FIELD_LABELS[field]);
+        td.addEventListener('blur', function() { row[field] = td.textContent.trim(); saveSession(); });
+        tr.appendChild(td);
+      });
+
+      tr.appendChild(makeSelectCell(row, 'priority', BACKLOG.priorities, 'Priority…', false, updateTally));
+      tr.appendChild(makeSelectCell(row, 'dept', BACKLOG.departments, 'Department…', false, updateTally));
+
+      ['who','what','when','impact'].forEach(function(field) {
         var td = document.createElement('td');
         td.contentEditable = 'true';
         td.textContent = row[field] || '';
@@ -1226,15 +1419,17 @@
   }
 
   function addPlanRow() {
-    planState.push({ idea: '', lever: '', who: '', what: '', when: '', impact: '' });
+    planState.push({ idea: '', lever: '', priority: '', dept: '', who: '', what: '', when: '', impact: '' });
     saveSession();
     renderPlan();
+    updateTally();
   }
 
   function clearPlan() {
     planState = [];
     saveSession();
     renderPlan();
+    updateTally();
   }
 
   function pullCheckedIdeas() {
@@ -1243,7 +1438,8 @@
       ideasState[lever].forEach(function(idea) {
         if (idea.checked && !idea.pulled) {
           planState.push({
-            idea: idea.idea || '', lever: LEVER_LABELS[lever], who: idea.who || '',
+            idea: idea.idea || '', lever: LEVER_LABELS[lever],
+            priority: idea.priority || '', dept: idea.dept || '', who: idea.who || '',
             what: idea.what || '', when: idea.when || '', impact: idea.impact || ''
           });
           idea.pulled = true;
@@ -1255,7 +1451,174 @@
       saveSession();
       renderPlan();
       LEVER_KEYS.forEach(renderIdeas);
+      updateTally();
     }
+  }
+
+  /* ── v1.2: Master Backlog handoff export ────────────────────────────────────────────────────
+     The COS receiving this file needs three things the room can't give them verbally: every idea
+     (not just the 4-5 that made the plan), the exact board vocabulary to file it under, and enough
+     text to dedupe against 521 existing items. That's what this emits. */
+
+  function tagRow(src, leverKey) {
+    var pri = findPriority(src.priority || '');
+    var dep = findDepartment(src.dept || '');
+    return {
+      idea: src.idea || '',
+      lever: leverKey ? LEVER_LABELS[leverKey] : (src.lever || ''),
+      leverKey: leverKey || null,
+      owner: src.who || '',            // the tool's "Who" = the person who owns the action
+      what: src.what || '',
+      when: src.when || '',
+      impact: src.impact || '',
+      priority: src.priority || null,
+      priorityLabelId: pri ? pri.labelId : null,
+      department: src.dept || null,
+      departmentGroupId: dep ? dep.groupId : null,
+      backlogWho: dep && dep.who ? dep.who : null,
+      backlogWhoLabelId: dep && dep.whoId !== undefined ? dep.whoId : null,
+      tagged: !!(src.priority && src.dept)
+    };
+  }
+
+  function buildExport() {
+    var q = QUARTERS.filter(function(x) { return x.id === currentQuarterId; })[0] || QUARTERS[0];
+    var ideas = [];
+    LEVER_KEYS.forEach(function(lever) {
+      ideasState[lever].forEach(function(idea) {
+        // Skip rows that are genuinely empty — a stray "+ Add idea" click isn't a backlog candidate
+        if (!(idea.idea || idea.what || idea.who || idea.impact)) return;
+        var row = tagRow(idea, lever);
+        row.inActionPlan = !!idea.pulled;
+        ideas.push(row);
+      });
+    });
+    var plan = planState
+      .filter(function(r) { return r.idea || r.what || r.who || r.impact; })
+      .map(function(r) { return tagRow(r, null); });
+
+    return {
+      schema: 'einstein-power-of-one/v1',
+      exportedAt: new Date().toISOString(),
+      source: 'Power of One workshop tool',
+      quarter: q.id,
+      quarterLabel: q.label,
+      masterBacklog: {
+        boardId: BACKLOG.boardId,
+        boardName: BACKLOG.boardName,
+        boardUrl: BACKLOG.boardUrl,
+        priorityColumnId: BACKLOG.priorityColumnId,
+        whoColumnId: BACKLOG.whoColumnId,
+        note: 'Match on the *LabelId / GroupId fields, not the display text — label strings contain emoji and are easy to mangle in transit.'
+      },
+      instructionsForCOS: [
+        'Cross-reference every idea below against the Master Backlog (' + BACKLOG.boardId + ') before creating anything — the board already holds 500+ items and duplicates are the failure mode here.',
+        'Dedupe: if an idea already exists, add an update to the existing pulse citing this Power of One session rather than creating a second item.',
+        'For genuinely new ideas, create the item in the group named by departmentGroupId, set the Priority column (' + BACKLOG.priorityColumnId + ') from priorityLabelId, and set the Who? column (' + BACKLOG.whoColumnId + ') from backlogWhoLabelId where present.',
+        'Ideas with tagged=false were logged in the room but never assigned a priority or department — surface them back to Cameron, do not file them on a guess.',
+        'Rows with inActionPlan=true are the ones the room committed to this quarter; the rest are the parking lot.'
+      ],
+      counts: {
+        ideasTotal: ideas.length,
+        ideasTagged: ideas.filter(function(i) { return i.tagged; }).length,
+        ideasInActionPlan: ideas.filter(function(i) { return i.inActionPlan; }).length,
+        actionPlanRows: plan.length
+      },
+      ideas: ideas,
+      actionPlan: plan
+    };
+  }
+
+  function stamp() {
+    var d = new Date();
+    function p(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  function exportJson() {
+    var data = buildExport();
+    if (!data.counts.ideasTotal && !data.counts.actionPlanRows) {
+      notify('Nothing to export yet — log some ideas first.');
+      return;
+    }
+    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'power-of-one-' + data.quarter + '-' + stamp() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+    var untagged = data.counts.ideasTotal - data.counts.ideasTagged;
+    notify('Exported ' + data.counts.ideasTotal + ' ideas' + (untagged ? ' — ' + untagged + ' still untagged' : ' — all tagged'));
+  }
+
+  function buildBrief() {
+    var data = buildExport();
+    var L = [];
+    L.push('# Power of One — ' + data.quarterLabel + ' (exported ' + stamp() + ')');
+    L.push('');
+    L.push('Handoff for the Chief of Staff: cross-reference against **' + data.masterBacklog.boardName + '** (board ' + data.masterBacklog.boardId + '), dedupe, then file new ideas into the listed group with the listed Priority.');
+    L.push('');
+    L.push('- Ideas logged: **' + data.counts.ideasTotal + '** (' + data.counts.ideasTagged + ' tagged, ' + (data.counts.ideasTotal - data.counts.ideasTagged) + ' untagged)');
+    L.push('- Committed to the action plan: **' + data.counts.actionPlanRows + '**');
+    L.push('');
+    L.push('## Action plan — this quarter\'s commitments');
+    if (!data.actionPlan.length) { L.push('_None recorded._'); }
+    data.actionPlan.forEach(function(r) {
+      L.push('- **' + (r.idea || '(untitled)') + '** — ' + (r.lever || 'no lever') +
+             ' · Priority: ' + (r.priority || 'UNTAGGED') + ' · Dept: ' + (r.department || 'UNTAGGED') +
+             (r.owner ? ' · Owner: ' + r.owner : '') + (r.when ? ' · When: ' + r.when : '') +
+             (r.impact ? ' · $: ' + r.impact : ''));
+      if (r.what) L.push('  - ' + r.what);
+    });
+    L.push('');
+    L.push('## All ideas by lever');
+    LEVER_KEYS.forEach(function(lever) {
+      var rows = data.ideas.filter(function(i) { return i.leverKey === lever; });
+      if (!rows.length) return;
+      L.push('');
+      L.push('### ' + LEVER_LABELS[lever]);
+      rows.forEach(function(r) {
+        L.push('- ' + (r.inActionPlan ? '✅ ' : '') + (r.idea || '(untitled)') +
+               ' — Priority: ' + (r.priority || 'UNTAGGED') + ' · Dept: ' + (r.department || 'UNTAGGED') +
+               (r.owner ? ' · Owner: ' + r.owner : ''));
+        if (r.what) L.push('  - ' + r.what);
+      });
+    });
+    return L.join('\n');
+  }
+
+  function copyBrief() {
+    var text = buildBrief();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.cssText = 'position:fixed;top:-1000px;left:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      notify(ok ? 'Handoff brief copied — paste it to your COS.' : '⚠ Copy failed — use Export JSON instead.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() {
+        notify('Handoff brief copied — paste it to your COS.');
+      })['catch'](fallback);
+    } else { fallback(); }
+  }
+
+  function updateTally() {
+    var el = document.getElementById('exportTally');
+    if (!el) return;
+    var d = buildExport();
+    var untagged = d.counts.ideasTotal - d.counts.ideasTagged;
+    el.innerHTML = '<strong>' + d.counts.ideasTotal + '</strong> ideas logged across 8 levers · ' +
+                   '<strong>' + d.counts.ideasTagged + '</strong> fully tagged · ' +
+                   (untagged ? '<strong>' + untagged + '</strong> still missing a Priority or Department'
+                             : 'every idea tagged and ready to hand off');
   }
 
   loadSession();
@@ -1272,6 +1635,9 @@
   document.getElementById('addPlanRowBtn').addEventListener('click', addPlanRow);
   document.getElementById('clearPlanBtn').addEventListener('click', clearPlan);
   document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
+  document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
+  document.getElementById('copyBriefBtn').addEventListener('click', copyBrief);
+  updateTally();
 
   /* ── Nav active state on scroll ── */
   var sections = ['numbers','levers','swing','history','process','script','plan'].map(function(id) { return document.getElementById(id); });
