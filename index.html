@@ -9,6 +9,14 @@
 <!-- v1.2 2026-07-29 — Master Backlog handoff: Priority + Department columns on every idea and plan row (labels + ids pulled
      live from board 18408300070), JSON export + copyable brief for the COS cross-reference/dedupe/file loop.
      Storage key deliberately UNCHANGED (pow1_session_v1) — the Q2 QGR session data stays intact; new fields default blank. -->
+<!-- v1.3 2026-07-30 — Room session travels + quarters carry over: Cameron's Q2 QGR session (34 ideas + action plan,
+     exported 7/29) is BAKED IN as a fill-only seed so every browser on the published link sees it — the seed only ADDS
+     rows a browser doesn't already have (matched on idea text) and never overwrites local edits, so Paul can fill in
+     Priority/Department on the seeded rows and export for the Master Backlog dedupe. Session storage is now per-quarter
+     (pow1_session_v1__<quarterId>, legacy flat key auto-migrated); when a future quarter opens empty, it inherits the
+     previous quarter's custom questions and every idea NOT yet pulled to the plan (badged ↩ as carried) — filed work
+     stays in its quarter, the parking lot rolls forward. -->
+
 
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -401,6 +409,10 @@
   .row-remove-btn:hover { border-color: #E8877A; color: #E8877A; }
   .ideas-table tr.pulled td { opacity: 0.45; }
   .pulled-tag { font-size: 10px; color: var(--e-orange); font-weight: 700; text-transform: uppercase; }
+  .carried-tag {
+    display: block; font-size: 11px; color: var(--e-orange); font-weight: 800;
+    text-align: center; margin-top: 3px; cursor: help;
+  }
 
   /* v1.2: Master-Backlog handoff cells — dropdowns, not free text, so the exported label matches Monday exactly */
   .ideas-table .col-tag { width: 118px; }
@@ -681,7 +693,7 @@
     <h2>Walk the room, lever by lever</h2>
     <p>Standing views below are Paul's own read as of July 2026 — start each lever there, then use the prompts to check if anything's changed. Under each lever: edit the prompts, then log ideas as they come up. Check the box on any idea worth acting on and pull it into the Action Plan when you're done.</p>
 
-    <div class="persist-note">Questions and ideas you add or remove are saved in this browser (localStorage) so a refresh won't lose them — but they won't follow you to a different browser, device, or the published link's next visitor. If a question should become the permanent default for every future quarter, ask Clark to bake it into the file, the way History entries are added.</div>
+    <div class="persist-note">The Q2 2026 room session (all 34 ideas + the action plan) is baked into this page, so every browser on this link starts from it — add tags, edit, and export freely; your edits save in this browser per quarter and never overwrite anyone else's. When a new quarter opens, it automatically inherits your custom questions plus every idea that was never pulled into an action plan (badged ↩) — the parking lot rolls forward, filed work stays with its quarter. To make a session permanent for every viewer the way Q2's is, export it and ask Clark or Albert to bake it in.</div>
 
     <div class="script-item" data-lever="price">
       <div class="script-head"><h4>1. Price</h4><span class="chip" style="background:var(--status-strength)">Strength</span></div>
@@ -833,7 +845,7 @@
 </section>
 
 <footer>
-  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop. <span style="opacity:.7">v1.2 · 2026-07-29</span></p>
+  <p>Einstein Moving Co — internal tool. Method adapted from Vern Harnish, <em>Scaling Up</em>, p. 231. Replaces the CashFlowStory subscription for the quarterly Power of One workshop. <span style="opacity:.7">v1.3 · 2026-07-30</span></p>
 </footer>
 
 <script>
@@ -1029,7 +1041,10 @@
       sel.appendChild(opt);
     });
     sel.value = currentQuarterId;
-    sel.addEventListener('change', function() { loadQuarter(sel.value); });
+    sel.addEventListener('change', function() {
+      loadQuarter(sel.value);
+      switchSession(sel.value); // v1.3: the Discussion Script + Action Plan are per-quarter too
+    });
   }
 
   ids.forEach(function(id) {
@@ -1053,7 +1068,13 @@
   loadQuarter(currentQuarterId);
 
   /* ── Discussion Script: editable prompts + per-lever ideas + Action Plan, persisted to localStorage ── */
-  var STORAGE_KEY = 'pow1_session_v1';
+  /* v1.3: storage is per-quarter — pow1_session_v1__<quarterId>. The old flat key (pow1_session_v1) held the
+     Q2 2026 room session and is read as a fallback for that quarter, untouched, so nothing migrates destructively. */
+  var LEGACY_STORAGE_KEY = 'pow1_session_v1';
+  var LEGACY_QUARTER = 'q2-2026';
+  function storageKeyFor(qid) { return 'pow1_session_v1__' + qid; }
+  var sessionQuarterId = currentQuarterId;
+  var STORAGE_KEY = storageKeyFor(sessionQuarterId); // kept for the cross-tab storage listener below
   var LEVER_KEYS = ['price','volume','cogs','overhead','ar','ap','materials','truck'];
   var LEVER_LABELS = {
     price: 'Price', volume: 'Volume', cogs: 'COGS', overhead: 'Overhead',
@@ -1201,14 +1222,491 @@
   var ideasState = {};
   var planState = [];
 
-  function loadSession() {
-    var stored = {};
-    try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch (e) { stored = {}; }
+  /* v1.3: baked-in room sessions, one per quarter. Fill-only — a seed row is added ONLY if the browser
+     doesn't already have an idea with the same text under that lever; local edits are never overwritten.
+     Generated from Cameron's 7/29 export (power-of-one-q2-2026-2026-07-29.json). __SEED_JSON__ is replaced
+     at build time. */
+  var SEEDS = { 'q2-2026': {
+  "exportedAt": "2026-07-30T03:09:39.438Z",
+  "ideas": {
+    "price": [
+      {
+        "idea": "More visibility on price to Regionals and potentially Branch mgmt.",
+        "priority": "",
+        "dept": "",
+        "who": "Matisen",
+        "what": "",
+        "when": "Weekly cadence",
+        "impact": "$100k",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Evaluate trip fees",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "Need to raise most likely.",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "inventory tracking, not charging for packing supplies,",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "set a starting point on the contract for the packing supplies",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Look at days of the month for variable pricing (last week of the month is busiest)",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "raise prices for the last week of the month regardless of what day of the week it is. Bank holidays.",
+        "when": "",
+        "impact": "",
+        "checked": true,
+        "pulled": true
+      },
+      {
+        "idea": "Stop discounting Trip Fees",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "Some branches have a high amount of travel fees that managers discount.",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "volume": [
+      {
+        "idea": "Improve estimate accuracy to improve conversions",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Hire quicker and get rid of trial days",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Culture fit hires for better retention and more A players",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Forecasting improvement based on hours",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "improved training for sales team to improve conversions",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "cogs": [
+      {
+        "idea": "reduce callouts particularly on the weekends",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "improved Management of Overtime",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Inventory tracking",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Reduce hiring and trial day costs",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "reduce the first day mover discount. From 100% to 50% or less",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Push back on vendors to reduce pricing",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Switch to Android tablets",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "Stop paying for clover gos",
+        "when": "",
+        "impact": "20,000",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Adjust benefits to be based on variable hours and wait for an employee to be on the team for 11 months before eligible",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "100,000",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "overhead": [
+      {
+        "idea": "costco memberships",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Better software budgeting",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "ar": [
+      {
+        "idea": "Android Tablets",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Collections proces refined",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "merchant processing built into EMMA",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Manager sends virtual invoice when clover is down.",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Training to CERs for collecting payments",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Charge a deposit and have the card on file",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "ap": [
+      {
+        "idea": "Ask for better terms",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Transitioning all of these to Rippling billpay",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "materials": [
+      {
+        "idea": "Scan inventory in and out",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Transparent reporting and pull in counts from Bill pay receipts",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Monthly inventory counts",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ],
+    "truck": [
+      {
+        "idea": "Move trucks around based on demand between branches",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "have a standard out of town crew, they make round trips",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "reduce dead head time",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Dedicated packing team",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "light duties work for injured employees",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      },
+      {
+        "idea": "Standby guys especially on the weekend",
+        "priority": "",
+        "dept": "",
+        "who": "",
+        "what": "",
+        "when": "",
+        "impact": "",
+        "checked": false,
+        "pulled": false
+      }
+    ]
+  },
+  "actionPlan": [
+    {
+      "idea": "Look at days of the month for variable pricing (last week of the month is busiest)",
+      "lever": "Price",
+      "priority": "",
+      "dept": "",
+      "who": "",
+      "what": "raise prices for the last week of the month regardless of what day of the week it is. Bank holidays.",
+      "when": "",
+      "impact": ""
+    }
+  ]
+} };
+
+  function normText(s) { return String(s || '').trim().toLowerCase(); }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function indexOfQuarter(qid) {
+    for (var i = 0; i < QUARTERS.length; i++) { if (QUARTERS[i].id === qid) return i; }
+    return QUARTERS.length - 1;
+  }
+
+  function readStored(qid) {
+    try {
+      var raw = localStorage.getItem(storageKeyFor(qid));
+      if (raw) return JSON.parse(raw);
+      if (qid === LEGACY_QUARTER) {
+        raw = localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  function loadSession(qid) {
+    sessionQuarterId = qid;
+    var stored = readStored(qid);
+    var s = stored || {};
     LEVER_KEYS.forEach(function(k) {
-      promptState[k] = (stored.prompts && stored.prompts[k]) ? stored.prompts[k].slice() : DEFAULT_PROMPTS[k].slice();
-      ideasState[k] = (stored.ideas && stored.ideas[k]) ? stored.ideas[k] : [];
+      promptState[k] = (s.prompts && s.prompts[k]) ? s.prompts[k].slice() : DEFAULT_PROMPTS[k].slice();
+      ideasState[k] = (s.ideas && s.ideas[k]) ? s.ideas[k] : [];
     });
-    planState = stored.actionPlan || [];
+    planState = s.actionPlan || [];
+
+    // 1) Merge the baked seed for this quarter, fill-only.
+    var seed = SEEDS[qid];
+    var seedAdded = false;
+    if (seed) {
+      LEVER_KEYS.forEach(function(k) {
+        (seed.ideas[k] || []).forEach(function(si) {
+          var dup = ideasState[k].some(function(i) { return normText(i.idea) === normText(si.idea); });
+          if (!dup) { ideasState[k].push(clone(si)); seedAdded = true; }
+        });
+      });
+      (seed.actionPlan || []).forEach(function(sr) {
+        var dup = planState.some(function(r) { return normText(r.idea) === normText(sr.idea); });
+        if (!dup) { planState.push(clone(sr)); seedAdded = true; }
+      });
+    }
+
+    // 2) Carry-forward: a quarter that opens with nothing of its own (no saved session, no seed rows)
+    //    inherits the nearest previous quarter's custom questions + every idea NOT pulled into a plan.
+    //    Filed work stays in its quarter; the parking lot rolls forward, badged as carried.
+    var hasAny = planState.length || LEVER_KEYS.some(function(k) { return ideasState[k].length; });
+    if (!stored && !hasAny) {
+      for (var p = indexOfQuarter(qid) - 1; p >= 0; p--) {
+        var prevQ = QUARTERS[p];
+        var prev = readStored(prevQ.id);
+        if (!prev && SEEDS[prevQ.id]) prev = SEEDS[prevQ.id];
+        if (!prev || !prev.ideas) continue;
+        LEVER_KEYS.forEach(function(k) {
+          (prev.ideas[k] || []).forEach(function(pi) {
+            if (pi.pulled) return; // it made a plan — it lives in that quarter's record
+            var row = clone(pi);
+            row.checked = false; row.pulled = false;
+            row.carriedFrom = pi.carriedFrom || prevQ.label; // keep the ORIGINAL quarter if it's already a carry
+            ideasState[k].push(row);
+          });
+        });
+        if (prev.prompts) {
+          LEVER_KEYS.forEach(function(k) { if (prev.prompts[k]) promptState[k] = prev.prompts[k].slice(); });
+        }
+        break;
+      }
+      saveSession();
+    } else if (seedAdded) {
+      saveSession();
+    }
   }
 
   function notify(msg) {
@@ -1226,7 +1724,7 @@
 
   var saveWarned = false;
   function saveSession() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); }
+    try { localStorage.setItem(storageKeyFor(sessionQuarterId), JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); }
     catch (e) {
       // v1.1: a silent failure here loses a whole workshop's ideas — warn once
       if (!saveWarned) { saveWarned = true; notify('⚠ Save failed — your ideas are NOT persisting in this browser. Print or copy the plan before closing.'); }
@@ -1235,7 +1733,7 @@
 
   // v1.1: two tabs on this page share one localStorage key, last writer wins — warn instead of clobbering silently
   window.addEventListener('storage', function(e) {
-    if (e.key === STORAGE_KEY) notify('⚠ This page changed in another tab — reload here before adding more, or edits will overwrite each other.');
+    if (e.key === storageKeyFor(sessionQuarterId) || e.key === LEGACY_STORAGE_KEY) notify('⚠ This page changed in another tab — reload here before adding more, or edits will overwrite each other.');
   });
 
   function renderPrompts(lever) {
@@ -1325,6 +1823,12 @@
       cb.type = 'checkbox'; cb.checked = !!idea.checked; cb.disabled = !!idea.pulled;
       cb.addEventListener('change', function() { idea.checked = cb.checked; saveSession(); });
       tdPull.appendChild(cb);
+      if (idea.carriedFrom) {
+        var carried = document.createElement('span');
+        carried.className = 'carried-tag'; carried.textContent = '↩';
+        carried.title = 'Carried forward from ' + idea.carriedFrom + ' — never filed to the backlog';
+        tdPull.appendChild(carried);
+      }
       tr.appendChild(tdPull);
 
       var ideaTd = document.createElement('td');
@@ -1483,7 +1987,8 @@
       departmentGroupId: dep ? dep.groupId : null,
       backlogWho: dep && dep.who ? dep.who : null,
       backlogWhoLabelId: dep && dep.whoId !== undefined ? dep.whoId : null,
-      tagged: !!(src.priority && src.dept)
+      tagged: !!(src.priority && src.dept),
+      carriedFrom: src.carriedFrom || null
     };
   }
 
@@ -1627,7 +2132,17 @@
                              : 'every idea tagged and ready to hand off');
   }
 
-  loadSession();
+  function renderScriptAll() {
+    LEVER_KEYS.forEach(function(lever) { renderPrompts(lever); renderIdeas(lever); });
+    renderPlan();
+    updateTally();
+  }
+  function switchSession(qid) {
+    loadSession(qid);
+    renderScriptAll();
+  }
+
+  loadSession(currentQuarterId);
   LEVER_KEYS.forEach(function(lever) {
     renderPrompts(lever);
     wireAddPrompt(lever);
