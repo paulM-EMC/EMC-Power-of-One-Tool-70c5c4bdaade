@@ -46,6 +46,12 @@
 
     /* Fixed (non-theme-swapped) — the "briefing" register is deliberately always-dark, a facilitator's run-sheet, independent of viewer theme */
     --briefing-bg: #27343D;
+
+    /* v1.2 BUGFIX — same "fixed, never theme-swapped" idea, for the chrome that is white-text-on-dark by design:
+       the nav, the hero, and the action-plan table header. These used to paint with var(--ink), but --ink is the
+       *text* token — dark mode flips it to near-white, so the background went pale while the text stayed white and
+       the hero became unreadable. They need a background that does NOT follow the theme. */
+    --chrome-bg: #27343D;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -105,7 +111,7 @@
   /* ── STICKY NAV ── */
   nav {
     position: sticky; top: 0; z-index: 200;
-    background: var(--ink);
+    background: var(--chrome-bg);
     display: flex; align-items: center;
     gap: 4px;
     padding: 0 20px;
@@ -132,7 +138,7 @@
 
   /* ── HERO ── */
   .hero {
-    background: var(--ink);
+    background: var(--chrome-bg);
     color: white;
     padding: 44px 20px 40px;
   }
@@ -441,7 +447,7 @@
   /* ── ACTION PLAN ── */
   .plan-table { width: 100%; border-collapse: collapse; margin-top: 18px; min-width: 760px; }
   .plan-table th {
-    background: var(--ink); color: white; text-align: left; font-size: 11px; text-transform: uppercase;
+    background: var(--chrome-bg); color: white; text-align: left; font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.4px; padding: 10px 12px; font-weight: 700;
   }
   .plan-table td {
