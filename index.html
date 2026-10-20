@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.5 2026-10-19 — Q3 numbers, blank-slate ideas per quarter with last quarter shown as reference, floating quarter switcher -->
 <!-- v1.4 2026-10-19 — Q3 placeholder, person-tag URL namespacing, CoS prompt+JSON button -->
 <!-- v1.1 2026-07-21 — Albert audit pass: noindex, print fix, nudge focus fix, A/R–A/P reference labels, save-failure warning -->
 <!-- v1.2 2026-07-29 — Master Backlog handoff: Priority + Department columns on every idea and plan row (labels + ids pulled
@@ -410,6 +411,38 @@
   .row-remove-btn:hover { border-color: #E8877A; color: #E8877A; }
   .ideas-table tr.pulled td { opacity: 0.45; }
   .pulled-tag { font-size: 10px; color: var(--e-orange); font-weight: 700; text-transform: uppercase; }
+  /* v1.5: last quarter's ideas, read-only reference above each lever's idea log */
+  .prev-ideas {
+    background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.18);
+    border-radius: var(--radius); padding: 8px 14px; margin: 14px 0 4px; font-size: 13px;
+  }
+  .prev-ideas summary { cursor: pointer; font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: rgba(255,255,255,0.55); }
+  .prev-ideas ul { list-style: none; margin: 8px 0 2px; padding: 0; }
+  .prev-ideas li { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-top: 1px solid rgba(255,255,255,0.06); color: rgba(255,255,255,0.75); }
+  .prev-ideas .prev-text { flex: 1 1 auto; min-width: 0; }
+  .prev-ideas .prev-tag { font-size: 10.5px; font-weight: 800; color: var(--e-orange); white-space: nowrap; }
+  .prev-ideas .prev-use {
+    font: 700 11.5px var(--font-body); color: #fff; background: transparent; white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; padding: 3px 9px; cursor: pointer;
+  }
+  .prev-ideas .prev-use:disabled { opacity: 0.4; cursor: default; }
+
+  /* v1.5: floating quarter switcher */
+  .quarter-float {
+    position: fixed; right: 16px; bottom: 16px; z-index: 150;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--paper); border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 12px; box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+    opacity: 0; transform: translateY(8px); pointer-events: none; transition: opacity 160ms ease, transform 160ms ease;
+  }
+  .quarter-float.show { opacity: 1; transform: none; pointer-events: auto; }
+  .quarter-float label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: var(--text-soft); }
+  .quarter-float select {
+    font-family: var(--font-body); font-weight: 700; font-size: 13px; color: var(--ink);
+    background: var(--workbench); border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; max-width: 62vw;
+  }
+  @media print { .quarter-float, .prev-ideas { display: none !important; } }
+
   .carried-tag {
     display: block; font-size: 11px; color: var(--e-orange); font-weight: 800;
     text-align: center; margin-top: 3px; cursor: help;
@@ -694,7 +727,7 @@
     <h2>Walk the room, lever by lever</h2>
     <p>Standing views below are Paul's own read as of July 2026 — start each lever there, then use the prompts to check if anything's changed. Under each lever: edit the prompts, then log ideas as they come up. Check the box on any idea worth acting on and pull it into the Action Plan when you're done.</p>
 
-    <div class="persist-note">The Q2 2026 room session (all 34 ideas + the action plan) is baked into this page, so every browser on this link starts from it — add tags, edit, and export freely; your edits save in this browser per quarter and never overwrite anyone else's. When a new quarter opens, it automatically inherits your custom questions plus every idea that was never pulled into an action plan (badged ↩) — the parking lot rolls forward, filed work stays with its quarter. To make a session permanent for every viewer the way Q2's is, export it and ask Clark or Albert to bake it in.</div>
+    <div class="persist-note">The Q2 2026 room session (all 34 ideas + the action plan) is baked into this page, so every browser on this link starts from it — add tags, edit, and export freely; your edits save in this browser per quarter and never overwrite anyone else's. Each new quarter starts with a blank idea log and keeps your custom questions. Last quarter's ideas show at the top of each lever for reference; click "+ Use this quarter" to bring one back in (badged ↩). Use the Quarter switcher in the bottom-right corner to flip between quarters without scrolling back up. To make a session permanent for every viewer the way Q2's is, export it and ask Clark or Albert to bake it in.</div>
 
     <div class="script-item" data-lever="price">
       <div class="script-head"><h4>1. Price</h4><span class="chip" style="background:var(--status-strength)">Strength</span></div>
@@ -1063,7 +1096,30 @@
     sel.addEventListener('change', function() {
       loadQuarter(sel.value);
       switchSession(sel.value); // v1.3: the Discussion Script + Action Plan are per-quarter too
+      var f = document.getElementById('quarterFloatSelect');
+      if (f) f.value = sel.value;
     });
+
+    // v1.5: floating quarter switcher, shown once the Step 1 selector scrolls out of view
+    var float = document.createElement('div');
+    float.className = 'quarter-float';
+    float.innerHTML = '<label for="quarterFloatSelect">Quarter</label><select id="quarterFloatSelect"></select>';
+    document.body.appendChild(float);
+    var fsel = float.querySelector('select');
+    fsel.innerHTML = sel.innerHTML;
+    fsel.value = sel.value;
+    fsel.addEventListener('change', function() {
+      sel.value = fsel.value;
+      sel.dispatchEvent(new Event('change'));
+    });
+    var bar = sel.closest('.quarter-bar');
+    if ('IntersectionObserver' in window && bar) {
+      new IntersectionObserver(function(entries) {
+        float.classList.toggle('show', !entries[0].isIntersecting);
+      }).observe(bar);
+    } else {
+      float.classList.add('show');
+    }
   }
 
   ids.forEach(function(id) {
@@ -1705,31 +1761,87 @@
     // 2) Carry-forward: a quarter that opens with nothing of its own (no saved session, no seed rows)
     //    inherits the nearest previous quarter's custom questions + every idea NOT pulled into a plan.
     //    Filed work stays in its quarter; the parking lot rolls forward, badged as carried.
+    //    v1.5: ideas no longer auto-carry. A new quarter starts with a blank idea log; last quarter's ideas
+    //    show read-only at the top of each lever (renderPrevIdeas) and can be copied in one at a time.
+    //    Custom questions still carry forward.
     var hasAny = planState.length || LEVER_KEYS.some(function(k) { return ideasState[k].length; });
+    var prevInfo = getPrevSession(qid);
     if (!stored && !hasAny) {
-      for (var p = indexOfQuarter(qid) - 1; p >= 0; p--) {
-        var prevQ = QUARTERS[p];
-        var prev = readStored(prevQ.id);
-        if (!prev && SEEDS[prevQ.id]) prev = SEEDS[prevQ.id];
-        if (!prev || !prev.ideas) continue;
-        LEVER_KEYS.forEach(function(k) {
-          (prev.ideas[k] || []).forEach(function(pi) {
-            if (pi.pulled) return; // it made a plan — it lives in that quarter's record
-            var row = clone(pi);
-            row.checked = false; row.pulled = false;
-            row.carriedFrom = pi.carriedFrom || prevQ.label; // keep the ORIGINAL quarter if it's already a carry
-            ideasState[k].push(row);
-          });
-        });
-        if (prev.prompts) {
-          LEVER_KEYS.forEach(function(k) { if (prev.prompts[k]) promptState[k] = prev.prompts[k].slice(); });
-        }
-        break;
+      if (prevInfo && prevInfo.data.prompts) {
+        LEVER_KEYS.forEach(function(k) { if (prevInfo.data.prompts[k]) promptState[k] = prevInfo.data.prompts[k].slice(); });
       }
+      saveSession();
+    } else if (stored && !s.noAutoCarry) {
+      // One-time cleanup: drop untouched rows the v1.3/v1.4 auto-carry dumped into this quarter
+      LEVER_KEYS.forEach(function(k) {
+        ideasState[k] = ideasState[k].filter(function(i) { return !(i.carriedFrom && !i.pulled && !i.checked && !i.copiedIn); });
+      });
       saveSession();
     } else if (seedAdded) {
       saveSession();
     }
+  }
+
+  // Nearest earlier quarter that has a session (this browser's saved one, else the baked seed)
+  function getPrevSession(qid) {
+    for (var p = indexOfQuarter(qid) - 1; p >= 0; p--) {
+      var prevQ = QUARTERS[p];
+      var prev = readStored(prevQ.id);
+      if (!prev && SEEDS[prevQ.id]) prev = SEEDS[prevQ.id];
+      if (prev && prev.ideas) return { quarter: prevQ, data: prev };
+    }
+    return null;
+  }
+
+  function renderPrevIdeas(lever) {
+    var table = document.querySelector('table[data-ideas-lever="' + lever + '"]');
+    if (!table) return;
+    var box = document.querySelector('details[data-prev-lever="' + lever + '"]');
+    if (!box) {
+      box = document.createElement('details');
+      box.className = 'prev-ideas';
+      box.setAttribute('data-prev-lever', lever);
+      box.open = true;
+      table.parentNode.insertBefore(box, table);
+    }
+    var info = getPrevSession(sessionQuarterId);
+    var list = info ? (info.data.ideas[lever] || []).filter(function(i) { return normText(i.idea); }) : [];
+    if (!list.length) { box.style.display = 'none'; return; }
+    box.style.display = '';
+    box.innerHTML = '';
+    var sum = document.createElement('summary');
+    sum.textContent = 'From ' + info.quarter.label + ' · ' + list.length + ' idea' + (list.length === 1 ? '' : 's') + ' (reference only)';
+    box.appendChild(sum);
+    var ul = document.createElement('ul');
+    list.forEach(function(pi) {
+      var li = document.createElement('li');
+      var txt = document.createElement('span');
+      txt.className = 'prev-text';
+      txt.textContent = pi.idea;
+      li.appendChild(txt);
+      if (pi.pulled) {
+        var tag = document.createElement('span');
+        tag.className = 'prev-tag'; tag.textContent = 'In ' + info.quarter.label.split(' (')[0] + ' plan';
+        li.appendChild(tag);
+      }
+      var already = ideasState[lever].some(function(i) { return normText(i.idea) === normText(pi.idea); });
+      var btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'prev-use';
+      btn.textContent = already ? 'Added' : '+ Use this quarter';
+      btn.disabled = already;
+      btn.addEventListener('click', function() {
+        var row = clone(pi);
+        row.checked = false; row.pulled = false; row.copiedIn = true;
+        row.carriedFrom = pi.carriedFrom || info.quarter.label;
+        ideasState[lever].push(row);
+        saveSession();
+        renderIdeas(lever);
+        updateTally();
+      });
+      li.appendChild(btn);
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
   }
 
   function notify(msg) {
@@ -1747,7 +1859,7 @@
 
   var saveWarned = false;
   function saveSession() {
-    try { localStorage.setItem(storageKeyFor(sessionQuarterId), JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState })); }
+    try { localStorage.setItem(storageKeyFor(sessionQuarterId), JSON.stringify({ prompts: promptState, ideas: ideasState, actionPlan: planState, noAutoCarry: true })); }
     catch (e) {
       // v1.1: a silent failure here loses a whole workshop's ideas — warn once
       if (!saveWarned) { saveWarned = true; notify('⚠ Save failed — your ideas are NOT persisting in this browser. Print or copy the plan before closing.'); }
@@ -1899,6 +2011,7 @@
       tr.appendChild(tdRemove);
       tbody.appendChild(tr);
     });
+    renderPrevIdeas(lever); // keeps the "Added" state on last quarter's list in step with this quarter's log
   }
 
   function wireAddIdea(lever) {
@@ -2193,7 +2306,7 @@
   }
 
   function renderScriptAll() {
-    LEVER_KEYS.forEach(function(lever) { renderPrompts(lever); renderIdeas(lever); });
+    LEVER_KEYS.forEach(function(lever) { renderPrompts(lever); renderIdeas(lever); renderPrevIdeas(lever); });
     renderPlan();
     updateTally();
   }
@@ -2214,6 +2327,7 @@
     wireAddPrompt(lever);
     wireResetPrompts(lever);
     renderIdeas(lever);
+    renderPrevIdeas(lever);
     wireAddIdea(lever);
   });
   renderPlan();
