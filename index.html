@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.4 2026-10-19 — Q3 placeholder, person-tag URL namespacing, CoS prompt+JSON button -->
 <!-- v1.1 2026-07-21 — Albert audit pass: noindex, print fix, nudge focus fix, A/R–A/P reference labels, save-failure warning -->
 <!-- v1.2 2026-07-29 — Master Backlog handoff: Priority + Department columns on every idea and plan row (labels + ids pulled
      live from board 18408300070), JSON export + copyable brief for the COS cross-reference/dedupe/file loop.
@@ -837,7 +838,8 @@
       </p>
       <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
         <button class="btn btn-primary" id="exportJsonBtn" type="button">⬇ Export for backlog (JSON)</button>
-        <button class="btn btn-ghost" id="copyBriefBtn" type="button">📋 Copy handoff brief</button>
+        <button class="btn btn-ghost" id="copyCosPromptBtn" type="button">🤖 Copy CoS prompt + JSON</button>
+          <button class="btn btn-ghost" id="copyBriefBtn" type="button">📋 Copy handoff brief</button>
       </div>
       <p class="tally" id="exportTally"></p>
     </div>
@@ -1022,7 +1024,25 @@
     var q = getQuarter(id);
     currentQuarterId = q.id;
     ids.forEach(function(fid) {
-      var val = q.numbers[fid];
+      var val = q.numbers[fid,
+  {
+    id: 'q3-2026',
+    label: 'Q3 2026 (Aug–Oct)',
+    file: '— TBD: actuals pending Cameron/Ben reconciliation',
+    tabs: '— TBD',
+    numbers: {
+      revenue: 0,        // TBD
+      cogsPct: 0,        // TBD
+      overhead: 0,       // TBD
+      arDays: 1,
+      apDays: 45,
+      materials: 0,
+      numTrucks: 0,      // TBD
+      costPerTruck: 0,   // TBD
+      currentUtil: 0     // TBD
+    }
+  }
+];
       document.getElementById(fid).value = (DOLLAR_IDS.indexOf(fid) !== -1) ? fmtGroup.format(val) : val;
     });
     document.getElementById('quarterProvenance').textContent = 'Loaded from ' + q.file + ' — ' + q.tabs;
@@ -1072,7 +1092,11 @@
      Q2 2026 room session and is read as a fallback for that quarter, untouched, so nothing migrates destructively. */
   var LEGACY_STORAGE_KEY = 'pow1_session_v1';
   var LEGACY_QUARTER = 'q2-2026';
-  function storageKeyFor(qid) { return 'pow1_session_v1__' + qid; }
+  var urlPerson = (function() {
+    try { return (new URLSearchParams(window.location.search).get('person') || '').toLowerCase().replace(/[^a-z0-9_-]/g,''); }
+    catch(e) { return ''; }
+  })();
+  function storageKeyFor(qid) { return 'pow1_session_v1__' + qid + (urlPerson ? '__' + urlPerson : ''); }
   var sessionQuarterId = currentQuarterId;
   var STORAGE_KEY = storageKeyFor(sessionQuarterId); // kept for the cross-tab storage listener below
   var LEVER_KEYS = ['price','volume','cogs','overhead','ar','ap','materials','truck'];
@@ -2101,7 +2125,44 @@
     return L.join('\n');
   }
 
-  function copyBrief() {
+  function buildCosPrompt() {
+    var data = buildExport();
+    var personName = urlPerson || 'Unknown';
+    var lines = [
+      'I just finished my Power of One pre-read for ' + data.quarterLabel + '. This is from ' + personName + '.',
+      '',
+      'Please file my ideas to Einstein’s Master Backlog on Monday.com (board ' + BACKLOG.boardId + ').',
+      '',
+      'Instructions:',
+      '1. Dedupe first — search the board for each idea before creating anything. If a close match already exists, skip it.',
+      '2. For net-new ideas: create the item in the group named by departmentGroupId, set Priority (' + BACKLOG.priorityColumnId + ') from priorityLabelId, set Who? (' + BACKLOG.whoColumnId + ') from backlogWhoLabelId, and assign ' + personName + ' as owner in the people column.',
+      '3. Ideas with tagged=false and no departmentGroupId — route to the Inbox group.',
+      '4. Set each new item\'s Project text field to: "Power of One ' + data.quarterLabel + ' · ' + personName + '"',
+      '',
+      'Session JSON:',
+      JSON.stringify(data, null, 2)
+    ];
+    return lines.join('\n');
+  }
+
+  function copyCosPrompt() {
+    var data = buildExport();
+    if (!data.counts.ideasTotal && !data.counts.actionPlanRows) { notify('Nothing to export yet — log some ideas first.'); return; }
+    var text = buildCosPrompt();
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.style.cssText = 'position:fixed;top:-1000px;left:0;';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      notify(ok ? 'Prompt + JSON copied — paste into your CoS.' : '⚠ Copy failed — use Export JSON instead.');
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function() { notify('Prompt + JSON copied — paste into your CoS.'); })['catch'](fallback);
+    } else { fallback(); }
+  }
+
+    function copyBrief() {
     var text = buildBrief();
     function fallback() {
       var ta = document.createElement('textarea');
@@ -2143,6 +2204,12 @@
   }
 
   loadSession(currentQuarterId);
+    if (urlPerson) {
+      var badge = document.createElement('div');
+      badge.style.cssText = 'position:fixed;top:12px;right:16px;background:#1a73e8;color:#fff;padding:5px 14px;border-radius:4px;font-size:12px;font-weight:700;z-index:200;letter-spacing:.03em;';
+      badge.textContent = 'Session: ' + urlPerson;
+      document.body.appendChild(badge);
+    }
   LEVER_KEYS.forEach(function(lever) {
     renderPrompts(lever);
     wireAddPrompt(lever);
@@ -2158,6 +2225,7 @@
   document.getElementById('printBtn').addEventListener('click', function() { window.print(); });
   document.getElementById('exportJsonBtn').addEventListener('click', exportJson);
   document.getElementById('copyBriefBtn').addEventListener('click', copyBrief);
+    document.getElementById('copyCosPromptBtn').addEventListener('click', copyCosPrompt);
   updateTally();
 
   /* ── Nav active state on scroll ── */
