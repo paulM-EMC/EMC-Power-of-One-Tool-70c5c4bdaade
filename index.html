@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.7 2026-10-19 — Target Qtr column on ideas + plan (next 4 fiscal quarters + Later), carried into export/brief -->
 <!-- v1.6 2026-10-19 — one open idea row per lever by default -->
 <!-- v1.5 2026-10-19 — Q3 numbers, blank-slate ideas per quarter with last quarter shown as reference, floating quarter switcher -->
 <!-- v1.4 2026-10-19 — Q3 placeholder, person-tag URL namespacing, CoS prompt+JSON button -->
@@ -390,7 +391,7 @@
   /* ── Ideas table (per lever, feeds Action Plan) ── */
   /* v1.2: Priority + Department columns push the table past narrow viewports — let the lever card scroll it */
   .script-item { overflow-x: auto; }
-  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; min-width: 880px; }
+  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; min-width: 1000px; }
   .ideas-table th {
     text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
     color: rgba(255,255,255,0.45); font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.15);
@@ -737,7 +738,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="price"><button class="btn btn-ghost" data-add-btn="price" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="price" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="price">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="price"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="price" type="button">+ Add idea</button>
@@ -750,7 +751,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="volume"><button class="btn btn-ghost" data-add-btn="volume" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="volume" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="volume">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="volume"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="volume" type="button">+ Add idea</button>
@@ -763,7 +764,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="cogs"><button class="btn btn-ghost" data-add-btn="cogs" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="cogs" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="cogs">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="cogs"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="cogs" type="button">+ Add idea</button>
@@ -776,7 +777,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="overhead"><button class="btn btn-ghost" data-add-btn="overhead" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="overhead" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="overhead">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="overhead"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="overhead" type="button">+ Add idea</button>
@@ -789,7 +790,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ar"><button class="btn btn-ghost" data-add-btn="ar" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ar" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ar">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ar"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ar" type="button">+ Add idea</button>
@@ -802,7 +803,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ap"><button class="btn btn-ghost" data-add-btn="ap" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ap" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ap">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ap"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ap" type="button">+ Add idea</button>
@@ -815,7 +816,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="materials"><button class="btn btn-ghost" data-add-btn="materials" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="materials" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="materials">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="materials"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="materials" type="button">+ Add idea</button>
@@ -828,7 +829,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="truck"><button class="btn btn-ghost" data-add-btn="truck" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="truck" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="truck">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="truck"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="truck" type="button">+ Add idea</button>
@@ -850,7 +851,7 @@
     <div class="table-wrap">
       <table class="plan-table" id="planTable">
         <thead>
-          <tr><th style="width:17%">Idea</th><th style="width:9%">Lever</th><th style="width:11%">Priority</th><th style="width:13%">Department</th><th style="width:10%">Who</th><th style="width:20%">What</th><th style="width:10%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
+          <tr><th style="width:16%">Idea</th><th style="width:8%">Lever</th><th style="width:10%">Priority</th><th style="width:12%">Department</th><th style="width:10%">Target Qtr</th><th style="width:9%">Who</th><th style="width:16%">What</th><th style="width:10%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
         </thead>
         <tbody id="planBody"></tbody>
       </table>
@@ -1220,6 +1221,20 @@
       if (BACKLOG.departments[i].title === title) return BACKLOG.departments[i];
     }
     return null;
+  }
+
+  /* v1.7: target quarter for an idea = the next four fiscal quarters after the session's quarter, plus "Later".
+     Fiscal year is offset one month: Q1 Feb-Apr, Q2 May-Jul, Q3 Aug-Oct, Q4 Nov-Jan. */
+  var FQ_MONTHS = { 1: 'Feb–Apr', 2: 'May–Jul', 3: 'Aug–Oct', 4: 'Nov–Jan' };
+  function targetQuarterOptions() {
+    var m = /^q(\d)-(\d{4})$/.exec(sessionQuarterId || '') || [null, '3', '2026'];
+    var q = +m[1], y = +m[2], out = [];
+    for (var i = 0; i < 4; i++) {
+      q++; if (q > 4) { q = 1; y++; }
+      out.push({ label: 'Q' + q + ' ' + y + ' (' + FQ_MONTHS[q] + ')' });
+    }
+    out.push({ label: 'Later' });
+    return out;
   }
 
   /* Builds one dropdown cell bound to `row[field]`. Options carry plain label text as the value so
@@ -1939,6 +1954,7 @@
       if (row.lever === leverLabel && row.idea && row.idea === idea.idea) {
         row.priority = idea.priority || '';
         row.dept = idea.dept || '';
+        row.targetQ = idea.targetQ || '';
         touched = true;
       }
     });
@@ -1986,6 +2002,7 @@
       }
       tr.appendChild(makeSelectCell(idea, 'priority', BACKLOG.priorities, 'Priority…', false, syncTags));
       tr.appendChild(makeSelectCell(idea, 'dept', BACKLOG.departments, 'Department…', false, syncTags));
+      tr.appendChild(makeSelectCell(idea, 'targetQ', targetQuarterOptions(), 'Quarter…', false, syncTags));
 
       ['who','what','when','impact'].forEach(function(field) {
         var td = document.createElement('td');
@@ -2044,6 +2061,7 @@
 
       tr.appendChild(makeSelectCell(row, 'priority', BACKLOG.priorities, 'Priority…', false, updateTally));
       tr.appendChild(makeSelectCell(row, 'dept', BACKLOG.departments, 'Department…', false, updateTally));
+      tr.appendChild(makeSelectCell(row, 'targetQ', targetQuarterOptions(), 'Quarter…', false, updateTally));
 
       ['who','what','when','impact'].forEach(function(field) {
         var td = document.createElement('td');
@@ -2090,7 +2108,7 @@
         if (idea.checked && !idea.pulled) {
           planState.push({
             idea: idea.idea || '', lever: LEVER_LABELS[lever],
-            priority: idea.priority || '', dept: idea.dept || '', who: idea.who || '',
+            priority: idea.priority || '', dept: idea.dept || '', targetQ: idea.targetQ || '', who: idea.who || '',
             what: idea.what || '', when: idea.when || '', impact: idea.impact || ''
           });
           idea.pulled = true;
@@ -2126,6 +2144,7 @@
       priorityLabelId: pri ? pri.labelId : null,
       department: src.dept || null,
       departmentGroupId: dep ? dep.groupId : null,
+      targetQuarter: src.targetQ || null,
       backlogWho: dep && dep.who ? dep.who : null,
       backlogWhoLabelId: dep && dep.whoId !== undefined ? dep.whoId : null,
       tagged: !!(src.priority && src.dept),
@@ -2168,7 +2187,8 @@
         'Dedupe: if an idea already exists, add an update to the existing pulse citing this Power of One session rather than creating a second item.',
         'For genuinely new ideas, create the item in the group named by departmentGroupId, set the Priority column (' + BACKLOG.priorityColumnId + ') from priorityLabelId, and set the Who? column (' + BACKLOG.whoColumnId + ') from backlogWhoLabelId where present.',
         'Ideas with tagged=false were logged in the room but never assigned a priority or department — surface them back to Cameron, do not file them on a guess.',
-        'Rows with inActionPlan=true are the ones the room committed to this quarter; the rest are the parking lot.'
+        'Rows with inActionPlan=true are the ones the room committed to this quarter; the rest are the parking lot.',
+        'targetQuarter is the fiscal quarter the person wants the idea worked in. Put it in the item name prefix or first update so it surfaces at that quarter’s QGR backlog walk.'
       ],
       counts: {
         ideasTotal: ideas.length,
@@ -2221,6 +2241,7 @@
     data.actionPlan.forEach(function(r) {
       L.push('- **' + (r.idea || '(untitled)') + '** — ' + (r.lever || 'no lever') +
              ' · Priority: ' + (r.priority || 'UNTAGGED') + ' · Dept: ' + (r.department || 'UNTAGGED') +
+             (r.targetQuarter ? ' · Target: ' + r.targetQuarter : '') +
              (r.owner ? ' · Owner: ' + r.owner : '') + (r.when ? ' · When: ' + r.when : '') +
              (r.impact ? ' · $: ' + r.impact : ''));
       if (r.what) L.push('  - ' + r.what);
@@ -2235,6 +2256,7 @@
       rows.forEach(function(r) {
         L.push('- ' + (r.inActionPlan ? '✅ ' : '') + (r.idea || '(untitled)') +
                ' — Priority: ' + (r.priority || 'UNTAGGED') + ' · Dept: ' + (r.department || 'UNTAGGED') +
+               (r.targetQuarter ? ' · Target: ' + r.targetQuarter : '') +
                (r.owner ? ' · Owner: ' + r.owner : ''));
         if (r.what) L.push('  - ' + r.what);
       });
