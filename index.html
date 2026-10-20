@@ -877,6 +877,23 @@
         costPerTruck: 5628,    // (Truck & Equipment $71,156 + Veh. Repair/Maint $163,712 + Insurance Auto/GL/Cargo $221,920) / 81.17 trucks
         currentUtil: 65        // estimate — utilization % isn't in this workbook
       }
+    },
+    {
+      id: 'q3-2026',
+      label: 'Q3 2026 (Aug–Oct, Oct projected)',
+      file: 'Q3 2026 financial review draft (Ben\'s Sage close Aug+Sep, Oct on the locked forecast)',
+      tabs: "company scorecard + margins + opex + fleet TUR; swap in Oct actuals after the October close",
+      numbers: {
+        revenue: 6915978,      // Aug $2,774,368 + Sep $2,102,569 (closed) + Oct $2,039,041 (projected)
+        cogsPct: 52.84,        // Aug+Sep cost of revenue share; Ben projected Oct at the same Aug+Sep ratios
+        overhead: 2507254,     // revenue - cost of revenue - Q3 NOI $754,321; Aug+Sep alone ties to the opex table ($1,671,517)
+        arDays: 1,             // estimate, carried from Q2 (not in the review)
+        apDays: 45,            // estimate, carried from Q2 (not in the review)
+        materials: 0,          // still untracked
+        numTrucks: 90.17,      // Q3 average trucks (plan 83.1)
+        costPerTruck: 6341,    // (Truck & equip 0.96% + Veh. R&M 3.32% of Aug+Sep rev + Insurance $172,436) x 1.5 for the quarter / 90.17
+        currentUtil: 63.1      // fleet TUR to 10/15 (hub), against the 66% bar
+      }
     }
   ];
   var currentQuarterId = QUARTERS[QUARTERS.length - 1].id;
@@ -1024,25 +1041,7 @@
     var q = getQuarter(id);
     currentQuarterId = q.id;
     ids.forEach(function(fid) {
-      var val = q.numbers[fid,
-  {
-    id: 'q3-2026',
-    label: 'Q3 2026 (Aug–Oct)',
-    file: '— TBD: actuals pending Cameron/Ben reconciliation',
-    tabs: '— TBD',
-    numbers: {
-      revenue: 0,        // TBD
-      cogsPct: 0,        // TBD
-      overhead: 0,       // TBD
-      arDays: 1,
-      apDays: 45,
-      materials: 0,
-      numTrucks: 0,      // TBD
-      costPerTruck: 0,   // TBD
-      currentUtil: 0     // TBD
-    }
-  }
-];
+      var val = q.numbers[fid];
       document.getElementById(fid).value = (DOLLAR_IDS.indexOf(fid) !== -1) ? fmtGroup.format(val) : val;
     });
     document.getElementById('quarterProvenance').textContent = 'Loaded from ' + q.file + ' — ' + q.tabs;
