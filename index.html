@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.6 2026-10-19 — one open idea row per lever by default -->
 <!-- v1.5 2026-10-19 — Q3 numbers, blank-slate ideas per quarter with last quarter shown as reference, floating quarter switcher -->
 <!-- v1.4 2026-10-19 — Q3 placeholder, person-tag URL namespacing, CoS prompt+JSON button -->
 <!-- v1.1 2026-07-21 — Albert audit pass: noindex, print fix, nudge focus fix, A/R–A/P reference labels, save-failure warning -->
@@ -1948,6 +1949,10 @@
     var tbody = document.querySelector('tbody[data-ideas-body="' + lever + '"]');
     if (!tbody) return;
     tbody.innerHTML = '';
+    // v1.6: every lever always shows at least one open row to type into (export skips it while empty)
+    if (!ideasState[lever].length) {
+      ideasState[lever].push({ idea: '', priority: '', dept: '', who: '', what: '', when: '', impact: '', checked: false, pulled: false });
+    }
     ideasState[lever].forEach(function(idea, idx) {
       var tr = document.createElement('tr');
       if (idea.pulled) tr.className = 'pulled';
