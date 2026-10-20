@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Einstein Power of One</title>
+<!-- v1.8 2026-10-19 — idea text wraps (row grows), no horizontal scroll on desktop; What + When columns retired, Target Qtr renamed When (Target Qtr) -->
 <!-- v1.7 2026-10-19 — Target Qtr column on ideas + plan (next 4 fiscal quarters + Later), carried into export/brief -->
 <!-- v1.6 2026-10-19 — one open idea row per lever by default -->
 <!-- v1.5 2026-10-19 — Q3 numbers, blank-slate ideas per quarter with last quarter shown as reference, floating quarter switcher -->
@@ -391,7 +392,17 @@
   /* ── Ideas table (per lever, feeds Action Plan) ── */
   /* v1.2: Priority + Department columns push the table past narrow viewports — let the lever card scroll it */
   .script-item { overflow-x: auto; }
-  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; min-width: 1000px; }
+  .ideas-table { width: 100%; border-collapse: collapse; margin: 10px 0 8px; font-size: 13px; min-width: 760px; table-layout: fixed; }
+  /* v1.8: fixed column widths; the Idea column takes the rest and long text wraps onto more lines (row grows) */
+  .ideas-table .col-idea { width: auto; }
+  .ideas-table .col-who { width: 90px; }
+  .ideas-table .col-impact { width: 80px; }
+  .ideas-table td, .plan-table td { white-space: pre-wrap; overflow-wrap: anywhere; word-break: normal; }
+  .ideas-table .cell-select, .plan-table .cell-select { width: 100%; max-width: 100%; }
+  .idea-cell .idea-text { min-height: 1.4em; outline: none; }
+  .idea-cell .idea-text[contenteditable="true"]:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
+  .idea-cell .idea-note { margin-top: 4px; font-size: 12px; color: rgba(255,255,255,0.5); }
+  .idea-cell:focus-within { outline: 2px solid var(--e-orange); outline-offset: -2px; background: rgba(255,255,255,0.05); }
   .ideas-table th {
     text-align: left; padding: 6px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.4px;
     color: rgba(255,255,255,0.45); font-weight: 700; border-bottom: 1px solid rgba(255,255,255,0.15);
@@ -403,8 +414,8 @@
   .ideas-table td[contenteditable="true"] { min-width: 70px; }
   .ideas-table td[contenteditable="true"]:empty:before { content: attr(data-placeholder); color: rgba(255,255,255,0.3); }
   .ideas-table td[contenteditable="true"]:focus { outline: 2px solid var(--e-orange); outline-offset: -2px; background: rgba(255,255,255,0.05); }
-  .ideas-table .col-pull { width: 30px; text-align: center; }
-  .ideas-table .col-remove { width: 24px; text-align: center; }
+  .ideas-table .col-pull { width: 40px; text-align: center; }
+  .ideas-table .col-remove { width: 30px; text-align: center; }
   .ideas-table input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
   .row-remove-btn {
     width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);
@@ -451,7 +462,7 @@
   }
 
   /* v1.2: Master-Backlog handoff cells — dropdowns, not free text, so the exported label matches Monday exactly */
-  .ideas-table .col-tag { width: 118px; }
+  .ideas-table .col-tag { width: 108px; }
   .cell-select {
     width: 100%; font-family: inherit; font-size: 12px; padding: 4px 6px; border-radius: 5px;
     border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.06); color: white; cursor: pointer;
@@ -493,14 +504,14 @@
   }
 
   /* ── ACTION PLAN ── */
-  .plan-table { width: 100%; border-collapse: collapse; margin-top: 18px; min-width: 760px; }
+  .plan-table { width: 100%; border-collapse: collapse; margin-top: 18px; min-width: 860px; table-layout: fixed; }
   .plan-table th {
     background: var(--chrome-bg); color: white; text-align: left; font-size: 11px; text-transform: uppercase;
     letter-spacing: 0.4px; padding: 10px 12px; font-weight: 700;
   }
   .plan-table td {
     border: 1px solid var(--border); padding: 10px 12px; font-size: 13.5px; vertical-align: top;
-    background: var(--paper); min-width: 110px;
+    background: var(--paper);
   }
   .plan-table td[contenteditable="true"]:focus { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--workbench); }
   .plan-table td.placeholder { color: var(--text-soft); }
@@ -738,7 +749,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="price"><button class="btn btn-ghost" data-add-btn="price" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="price" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="price">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="price"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="price" type="button">+ Add idea</button>
@@ -751,7 +762,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="volume"><button class="btn btn-ghost" data-add-btn="volume" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="volume" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="volume">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="volume"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="volume" type="button">+ Add idea</button>
@@ -764,7 +775,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="cogs"><button class="btn btn-ghost" data-add-btn="cogs" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="cogs" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="cogs">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="cogs"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="cogs" type="button">+ Add idea</button>
@@ -777,7 +788,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="overhead"><button class="btn btn-ghost" data-add-btn="overhead" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="overhead" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="overhead">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="overhead"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="overhead" type="button">+ Add idea</button>
@@ -790,7 +801,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ar"><button class="btn btn-ghost" data-add-btn="ar" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ar" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ar">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ar"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ar" type="button">+ Add idea</button>
@@ -803,7 +814,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="ap"><button class="btn btn-ghost" data-add-btn="ap" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="ap" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="ap">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="ap"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="ap" type="button">+ Add idea</button>
@@ -816,7 +827,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="materials"><button class="btn btn-ghost" data-add-btn="materials" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="materials" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="materials">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="materials"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="materials" type="button">+ Add idea</button>
@@ -829,7 +840,7 @@
       <div class="prompt-add"><input type="text" placeholder="Add a question…" data-add-lever="truck"><button class="btn btn-ghost" data-add-btn="truck" type="button">Add</button></div>
       <button class="prompt-reset" data-reset-lever="truck" type="button">Reset questions to default</button>
       <table class="ideas-table" data-ideas-lever="truck">
-        <thead><tr><th class="col-pull">Pull</th><th>Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">Target Qtr</th><th>Who</th><th>What</th><th>When</th><th>$ Impact</th><th class="col-remove"></th></tr></thead>
+        <thead><tr><th class="col-pull">Pull</th><th class="col-idea">Idea</th><th class="col-tag">Priority</th><th class="col-tag">Department</th><th class="col-tag">When (Target Qtr)</th><th class="col-who">Who</th><th class="col-impact">$ Impact</th><th class="col-remove"></th></tr></thead>
         <tbody data-ideas-body="truck"></tbody>
       </table>
       <button class="add-idea-row" data-add-idea="truck" type="button">+ Add idea</button>
@@ -851,7 +862,7 @@
     <div class="table-wrap">
       <table class="plan-table" id="planTable">
         <thead>
-          <tr><th style="width:16%">Idea</th><th style="width:8%">Lever</th><th style="width:10%">Priority</th><th style="width:12%">Department</th><th style="width:10%">Target Qtr</th><th style="width:9%">Who</th><th style="width:16%">What</th><th style="width:10%">When</th><th style="width:10%">$ Impact</th><th class="col-remove no-print"></th></tr>
+          <tr><th class="col-idea">Idea</th><th style="width:110px">Lever</th><th style="width:140px">Priority</th><th style="width:150px">Department</th><th style="width:140px">When (Target Qtr)</th><th style="width:120px">Who</th><th style="width:100px">$ Impact</th><th class="col-remove no-print"></th></tr>
         </thead>
         <tbody id="planBody"></tbody>
       </table>
@@ -1833,7 +1844,7 @@
       var li = document.createElement('li');
       var txt = document.createElement('span');
       txt.className = 'prev-text';
-      txt.textContent = pi.idea;
+      txt.textContent = pi.idea + (pi.what ? ' · ' + pi.what : '');
       li.appendChild(txt);
       if (pi.pulled) {
         var tag = document.createElement('span');
@@ -1987,11 +1998,22 @@
       }
       tr.appendChild(tdPull);
 
+      // v1.8: the idea text wraps and the row grows. Older rows' "What" detail (the column is gone) shows underneath.
       var ideaTd = document.createElement('td');
-      ideaTd.contentEditable = idea.pulled ? 'false' : 'true';
-      ideaTd.textContent = idea.idea || '';
-      ideaTd.setAttribute('data-placeholder', FIELD_LABELS.idea);
-      ideaTd.addEventListener('blur', function() { idea.idea = ideaTd.textContent.trim(); saveSession(); updateTally(); });
+      ideaTd.className = 'idea-cell';
+      var ideaText = document.createElement('div');
+      ideaText.className = 'idea-text';
+      ideaText.contentEditable = idea.pulled ? 'false' : 'true';
+      ideaText.textContent = idea.idea || '';
+      ideaText.setAttribute('data-placeholder', 'Idea (add the detail here too)');
+      ideaText.addEventListener('blur', function() { idea.idea = ideaText.textContent.trim(); saveSession(); updateTally(); });
+      ideaTd.appendChild(ideaText);
+      if (idea.what) {
+        var note = document.createElement('div');
+        note.className = 'idea-note'; note.textContent = idea.what;
+        ideaTd.appendChild(note);
+      }
+      ideaTd.addEventListener('click', function(e) { if (e.target === ideaTd) ideaText.focus(); });
       tr.appendChild(ideaTd);
 
       // v1.2: Priority + Department stay editable after a pull — evaluation happens after the room picks its 4-5.
@@ -2004,7 +2026,7 @@
       tr.appendChild(makeSelectCell(idea, 'dept', BACKLOG.departments, 'Department…', false, syncTags));
       tr.appendChild(makeSelectCell(idea, 'targetQ', targetQuarterOptions(), 'Quarter…', false, syncTags));
 
-      ['who','what','when','impact'].forEach(function(field) {
+      ['who','impact'].forEach(function(field) {
         var td = document.createElement('td');
         td.contentEditable = idea.pulled ? 'false' : 'true';
         td.textContent = idea[field] || '';
@@ -2063,7 +2085,7 @@
       tr.appendChild(makeSelectCell(row, 'dept', BACKLOG.departments, 'Department…', false, updateTally));
       tr.appendChild(makeSelectCell(row, 'targetQ', targetQuarterOptions(), 'Quarter…', false, updateTally));
 
-      ['who','what','when','impact'].forEach(function(field) {
+      ['who','impact'].forEach(function(field) {
         var td = document.createElement('td');
         td.contentEditable = 'true';
         td.textContent = row[field] || '';
